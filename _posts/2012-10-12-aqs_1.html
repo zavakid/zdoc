@@ -1,0 +1,69 @@
+---
+layout: dummy
+title: Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(1)
+categories:
+  java
+  concurrent
+tags:
+- AbstractQueuedSynchronizer
+- aqs
+- concurrent
+- Java
+- 并发
+---
+<code>Java</code>中的并发包，是在Java代码中并发程序的热门话题。如果我们去读<code>concurrent</code>包的源码时，会发现其真正的核心是 <code>AbstractQueuedSynchronizer</code> ， 简称 AQS 框架 , 而 Doug Lea 大神正是此包的作者。
+
+
+
+之前也看过一遍 <code>AbstractQueuedSynchronize</code>，但印象不深，只有依稀的印象。这次重新学习一遍，并整理出笔记，希望对自己或者是别人有用。当然了，笔者也是浅显的过一遍，很多细节也并不是完全理解。
+
+
+
+建议读者先看这个系列的文章：<a href="http://whitesock.iteye.com/blog/1336920">Inside AbstractQueuedSynchronizer</a>，之后再继续本篇。
+
+
+
+首先，<code>AQS</code>会对进行 acquire 而被阻塞的线程进行管理，说是管理，其实就是内部维护了一个<code>FIFO队列</code>，这个队列是一个双向链表。链头可以理解为是一个空的节点，除了链头以外，每个节点内部都持有着一个线程，同时，有着两个重要的字段：<code>waitStatus</code> 和 <code>nextWaiter</code>。<code>nextWaiter</code>一般是作用与在使用<code>Condition</code>时的队列。而<code>waitStatus</code>则有以下几个字段：
+
+
+
+<ul>
+<li><strong>SIGNAL</strong> 表示下一个节点应该被唤醒。为什么是下一个节点？因为刚刚说了，这个<code>FIFO队列</code>，链头都是一个空的节点，但此节点的 <code>waitStatus</code> 正好就表示了要对下一节点做的事情</li>
+<li><strong>CANCELLED</strong> 表示此节点持有的线程被中断，或者该线程为<code>null</code>了。节点只能是暂时停留在此状态，因为在线程进入AQS时，线程会找机会整理链表，包括删除<code>CANCELLED</code>状态的节点。</li>
+<li><strong>CONDITION</strong> 表示此节点是在另一个队列中 —— condition队列中。比如我们使用的<code>ReentrantLock.newCondition()</code>获得<code>Condition</code>对象进行<code>await</code>时，在AQS内部所产生的节点。</li>
+<li><strong>PROPAGATE</strong> 顾名思义，传播。这点比较难理解，需要仔细推敲。因为此状态是为共享同步器使用的。加入此状态，可以避免无谓的线程 <code>park</code> 和 <code>unpark</code>。按照我对代码的理解，这是对多个线程并发获取共享同步器(比如<code>acquireShared</code>)所进行的优化，至少有3个线程并发，但想要优化效果明显的话，可能需要几十个线程并发的获取共享同步器(比如<code>acquireShared</code>)，如果在并发量非常大的时候，对系统的吞吐量的作用应该不少。</li>
+</ul>
+
+<code>AbstractQueuedSynchronizer</code>内置一个<code>state</code>字段，用来表示某种意义——当<code>ReentrantLock</code>使用AQS的时候，<code>state</code>被用来表示锁被重入的次数；当'Semaphore'使用AQS的时候，<code>state</code>则被用来表示当前还有多少信号量可被获取。
+
+
+
+<code>AbstractQueuedSynchronizer</code> 支持两种模式，分别是独占式和共享式。两者进行获取和释放动作的思路都是差不多的。
+
+
+
+获取同步器的流程如下：
+
+
+
+<pre><code>if(尝试获取成功){
+  return；
+}else{
+  加入等待队列;park自己
+}
+</code></pre>
+
+释放同步器的流程如下：
+
+
+
+<pre><code>if(尝试释放成功){
+  unpark等待队列中第一个节点
+}else{
+  return false
+}
+</code></pre>
+
+只要环绕着这两个思路去看<code>AQS</code>中的代码，相信应该可以明白其中的主要原理。
+
+

@@ -1,0 +1,30 @@
+---
+layout: post
+title: 解决 ubuntu 的 /etc/hosts 重启就被还原
+categories:
+  linux
+  efficiency
+tags:
+- hosts.ac
+- hosts被重置
+- Linux
+- Ubuntu
+---
+<p>我用的是<code>Ubuntu</code>的操作系统。之前碰到了一个问题： 为了方便登录公司机器，我经常修改<code>/etc/hosts</code> ，让自己连接到别的机器方便些。</p>
+
+<p>但就在前段时间，我发现一个问题：每当我修改完<code>/etc/hosts</code>，在重启之后，会发现<code>/etc/hosts</code>会被还原。这个非常让人奇怪，以前并不会出现这个问题。</p>
+
+<p>经过一段时间的<code>google</code>，终于发现原来是由<code>/etc/hosts.ac</code>引起的！</p>
+
+<p>每次重启的时候，你会发现<code>/etc/hosts</code>的内容就和<code>/etc/hosts.ac</code>的内容完全一样，当你改变<code>/etc/hosts.ac</code>的内容之后，重启机器，会发现<code>/etc/hosts.ac</code>的内容也被拷到<code>/etc/hosts</code>中去了。</p>
+
+<p>为什么会有<code>/etc/hosts.ac</code>？ 原来是公司的<code>VPN</code>从之前的<code>Array VPN</code>换成了思科提供的VPN，这样我就使用了思科的<code>Any Connect VPN Client</code>客户端。也正是这个客户端，新增了这个<code>/etc/hosts.ac</code>，想想<code>ac</code>就应该是<code>Any Connect</code>的简写了。</p>
+
+<p>至此，发现了问题，也就好解决了：</p>
+
+<ul>
+<li>比较暴力的解决方式是：直接修改 /etc/hosts.ac 的内容。当然，你也可以写一个脚本去修改这个文件。</li>
+<li>比较优雅的解决方式是：我还没有找到，抛砖引玉，希望能听到你提供的优雅方案</li>
+</ul>
+
+<p>附上在<code>google</code>上搜索到的资料：<a href="http://ubuntuforums.org/showthread.php?t=1896148">hosts file keeps getting reset/rewritten, hosts.ac the culprit</a></p>

@@ -1,0 +1,64 @@
+---
+layout: post
+title: Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(2)
+categories:
+  java
+  concurrent
+tags:
+- AbstractQueuedSynchronizer
+- aqs
+- concurrent
+- Java
+- 并发
+---
+学习了<code>AbstractQueuedSynchronizer</code> 之后(<code>Condition</code>没有在上文做笔记，当应该不难理解)，接下来笔者就尝试着分析在<code>JUC</code>包中的各个同步器，其语义是如何实现的。
+
+
+
+<h2>ReentrantLock</h2>
+
+内部类<code>Sync</code>继承了<code>AbstractQueuedSynchronizer</code>。<code>state</code>表示锁被重入的次数。因为其是独占锁，所以只实现了<code>tryRelease</code>，<code>isHeldExclusively</code>方法，而<code>tryAcquire</code>则交由子类基于公平和非公平的策略来实现。
+
+
+
+公平的<code>ReentrantLock</code>会在每次<code>tryAcquire</code>的时候，都老老实实让排在队列前面的线程优先拿锁。而非公平锁则是发现<code>state</code>为0后，就马上去尝试设置<code>state</code>，如果不能成功，才进入<code>AQS</code>内部的队列老老实实的排队。
+
+
+
+<h2>ReentrantReadWriteLock</h2>
+
+此类最为复杂。内部类<code>Sync</code>继承了<code>AbstractQueuedSynchronizer</code>，同时内部类<code>ReadLock</code>和<code>WriteLock</code>内部共享了<code>Sync</code>，<code>state</code>这个<code>int</code>被划分成两部分，高位16个bit表示共享读锁，低位16个bit表示独占写锁。
+
+
+
+大概的工作方式是：读锁使用<code>shared模式</code>，复写<code>tryAcquireShared</code>和<code>tryReleaseShared</code>；写锁使用独占锁，复写<code>tryAcquire</code>和<code>tryRelease</code>。当线程要求锁住写锁的时候，内部会检查<code>state</code>是否为0；如果不为0，则检查此时是写状态还是读状态；如果是写状态，则检查持有写锁的是否是自己；如果是的话，则进行锁重入。锁住读锁也是这个道理，只不过是使用的<code>shared</code>的锁模式而已。
+
+
+
+<h2>Semaphore</h2>
+
+使用<code>state</code>表示信号量。可以想象，使用是的<code>shared</code>模式。在<code>acquire</code>的时候，会去比较<code>state</code>来判断是否可以成功。
+
+
+
+需要注意的是此类如果使用不当，则可能会有线程被挂住的问题，测试代码可以参见这里：<a href="https://gist.github.com/3879133">https://gist.github.com/3879133</a>。
+
+
+
+<h2>CountDownLatch</h2>
+
+与<code>Semaphore</code>一样，都是非常简单的使用了<code>state</code>。
+
+
+
+<h2>CyclicBarrier</h2>
+
+内部使用的是<code>ReentrantLock</code>，利用了<code>Condition</code>来唤醒栅栏前的线程。
+
+
+
+<h2>FutureTask</h2>
+
+使用<code>state</code>来表示任务的执行状态。代码也相对比较简单。值得注意的是，<code>FutureTask</code>对于任务执行抛出的异常，是会捕捉住的（在get的时候才会给抛给你），如果在编写任务时候没有<code>catch(Exception)</code>，而导致有异常漏过业务代码，则很有可能产生不可预知的问题。比如，在使用 <code>ScheduledExecutorService</code>分发定时任务之后，而又不关心返回结果的时候，就可能会出现问题。所以一般对自己的线程，也应该处理自己线程的异常，这也是最佳实践的原则。
+
+

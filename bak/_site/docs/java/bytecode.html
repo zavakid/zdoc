@@ -1,0 +1,72 @@
+<!DOCTYPE html> 
+<html> 
+  <head> 
+    <meta charset="utf-8">
+    <title>Java字节码</title>
+    
+    
+    <link rel="stylesheet" href="/static/css/base-common.css" />
+    
+  </head>
+
+  <body>
+    <header>
+      
+    </header>
+
+    <div id="main">
+      <h2 id='id1'>简介</h2>
+
+<p>java bytecode 是 JVM 中执行的指令. 每个字节码都是一个字节(byte)长, 后面跟着不定长度的参数, 所有就有了多字节的指令. 一个字节长8个bit, 这就意味可能有256个字节码, 但是现在的字节码还没有达到256个. 此外, java字节码是基于栈的执行体系, 也就是说会依赖于栈这种数据结构, 在栈上做很多 pop 和 push.</p>
+
+<h2 id='id2'>指令</h2>
+
+<h3 id='id3'>指令的划分</h3>
+
+<p>指令被划分为几个作用:</p>
+
+<ul>
+<li>load到栈 或者 store回 loacl variable (比如: aload_0, istore)</li>
+
+<li>做数值计算或逻辑计算 (比如: ladd, fcmpl)</li>
+
+<li>类型转换 (比如 i2b, d2i)</li>
+
+<li>对象的创建或者操作 (比如: new, putfield)</li>
+
+<li>栈的一些操作 (比如: swap, dup2)</li>
+
+<li>流程的控制 (比如: ifeq, goto)</li>
+
+<li>方法调用 (比如: invokespecial, areturn)</li>
+</ul>
+
+<h3 id='id4'>指令的前后缀</h3>
+
+<p>很多指令都有前缀和后缀, 这些通常都有相同的含义, 如下:</p>
+
+<ul>
+<li>i : integer</li>
+
+<li>l : long</li>
+
+<li>s : short</li>
+
+<li>b : byte</li>
+
+<li>c : character</li>
+
+<li>f : float</li>
+
+<li>d : double</li>
+
+<li>a : reference</li>
+</ul>
+    </div>
+
+    <footer>
+    <p>powered by jekyll</p>
+    </footer>
+
+   </body> 
+ </html>
