@@ -8,11 +8,20 @@
 
   <!-- Set the viewport width to device width for mobile -->
   <meta name="viewport" content="width=device-width" />
+  <title>{{ page.title }}</title>
+  {% if page.description %}
+  <meta name="description" content="{{ page.description }}" />
+  {% endif %}
+  {% if page.keywords %}
+  <meta name="keywords" content="{{ page.keywords }}" />
+  {% endif %}
 
-  <title>{{ site.name }}</title>
-
+  <link rel="alternate" type="application/rss+xml" title="{{ site.title }} &raquo; Feed" href="{{ production_url  }}/atom.xml" />
   <link rel="stylesheet" href="{{ ASSET_PATH }}/stylesheets/foundation.min.css">
   <link rel="stylesheet" href="{{ ASSET_PATH }}/stylesheets/app.css">
+  <script src="{{ ASSET_PATH }}/javascripts/jquery.min.js"></script>
+  <script src="{{ ASSET_PATH }}/javascripts/foundation.min.js"></script>
+  <script src="{{ ASSET_PATH }}/javascripts/app.js"></script>
 </head>
 
 </head>
@@ -21,54 +30,50 @@
   <!-- Nav Bar -->
   <div class="row">
     <div class="twelve columns">
-      <ul class="nav-bar">
+      <nav class="top-bar">
+      <ul>
+        <!-- Title Area -->
+        <li class="name">
+        <h1>
+          <a href="{{ HOME_PATH }}">
+            {{ site.title }}
+          </a>
+        </h1>
+        </li>
+        <li class="toggle-topbar"><a href="#"></a></li>
+      </ul>
+      <section>
+      <!-- Left Nav Section -->
+      <ul class="left">
+        <li class="divider"></li>
         {% assign pages_list = site.pages %}
         {% assign group = 'navigation' %}
         {% include JB/pages_list %}
+        <li class="divider hide-for-small"></li>
       </ul>
-
-      <h1>{{ site.title }}<small>{{ site.tagline }}</small>
-      <hr />
+      </section>
+      </nav>
     </div>
   </div>
-
   <!-- End Nav -->
-
-
   <!-- Main Page Content and Sidebar -->
-
   <div class="row">
     <!-- Main Blog Content -->
-    <div class="nine columns" role="content">
-      <article>
+    <div class="nine columns content" role="content">
       {{  content }}
-      </article>
     </div>
-
     <!-- End Main Content -->
 
-
     <!-- Sidebar -->
-
     <aside class="three columns">
-
-      <h5>Categories</h5>
-      <ul class="side-nav">
-        <li><a href="#">News</a></li>
-        <li><a href="#">Code</a></li>
-        <li><a href="#">Design</a></li>
-        <li><a href="#">Fun</a></li>
-        <li><a href="#">Weasels</a></li>
-      </ul>
-
       <div class="panel">
-        <h5>Featured</h5>
-        <p>Pork drumstick turkey fugiat. Tri-tip elit turducken pork chop in. Swine short ribs meatball irure bacon nulla pork belly cupidatat meatloaf cow.</p>
-        <a href="#">Read More &rarr;</a>
+        <h5>关于Zava</h5>
+        <p>程序员, 杭州, Linux, Java, Ruby, Bash, 爱折腾，喜欢开源, 踢业余足球, 听点收音机</p>
+        <p>Follow me with:
+        <a href="https://github.com/zavakid">github</a>
+        </p>
       </div>
-
     </aside>
-
     <!-- End Sidebar -->
   </div>
 
@@ -81,24 +86,21 @@
     <div class="twelve columns">
       <hr />
       <div class="row">
-        <div class="six columns">
-          <p>&copy; Copyright no one at all. Go to town.</p>
+        <div class="eight columns">
+          <p>Site content © 2012 {{ site.author.name }}. Powered by jekyll and jekyllbootstra, customed by {{ site.author.name}}</p>
         </div>
-        <div class="six columns">
+        <div class="four columns">
           <ul class="inline-list right">
-            <li><a href="#">Link 1</a></li>
-            <li><a href="#">Link 2</a></li>
-            <li><a href="#">Link 3</a></li>
-            <li><a href="#">Link 4</a></li>
+            {% assign pages_list = site.pages %}
+            {% assign group = 'foot' %}
+            {% include JB/pages_list %}
           </ul>
         </div>
       </div>
     </div>
   </footer>
 
-  <!-- Included JS Files -->
-  <script src="../public/assets/templates.js"></script>
-
   <!-- End Footer -->
+  {% include JB/analytics %}
 </body>
 </html>

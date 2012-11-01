@@ -12,8 +12,34 @@
 /* -----------------------------------------
    Shared Styles
 ----------------------------------------- */
+div.content{
+  line-height : 1.6em;
+}
+ul {
+  list-style: none;
+}
+.content h1{
+  font-size: 1.6em;
+}
+.content h2{
+  font-size: 1.5em;
+}
+.content h3{
+  font-size: 1.4em;
+}
+.content h4{
+  font-size: 1.3em;
+}
+.content h5{
+  font-size: 1.2em;
+}
+.content h6{
+  font-size: 1.1em;
+}
 
-
+.content a.tag{
+  margin-top : 0.5em;
+}
 
 /* -----------------------------------------
    Page Name 1

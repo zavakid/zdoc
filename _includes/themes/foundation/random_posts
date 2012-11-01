@@ -1,0 +1,26 @@
+{% comment %}
+The random_posts list a random posts
+Usage:
+  1) assign the 'random_posts' variable to a valid array of posts
+  2) assign the 'category' variable, options
+  2) include JB/random_posts
+  example:
+  <ul>
+    {% assign random_posts = site.posts %}
+    {% include JB/random_posts %}
+  </ul>
+{% endcomment %}
+
+{% for node in random_posts %}
+  {% for node in random_posts %}
+    {% if node.title != null %}
+      {%if page.url == node.url %}
+        <li class="active"><a href="{{ BASE_PATH }}{{ node.url }}" class="active">{{ node.title }}</a></li>
+      {% else %}
+        <li><a href="{{ BASE_PATH }}{{ node.url }}">{{ node.title }}</a></li>
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+{% endfor %}
+
+{% assign random_posts = nil %}

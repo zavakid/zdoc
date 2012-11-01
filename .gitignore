@@ -7,3 +7,5 @@ Thumbs.db
 !.gitkeep
 
 .rbenv-version
+*.swp
+*~

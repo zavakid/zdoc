@@ -33,6 +33,12 @@ production_url : http://www.zavakid.com
 #
 JB :
   version : 0.2.13
+  posts_collate :
+    provider : custom
+  tags_list :
+    provider : custom
+  categories_list :
+    provider : custom
 
   # All links will be namespaced by BASE_PATH if defined.
   # Links in your website should always be prefixed with {{BASE_PATH}}
