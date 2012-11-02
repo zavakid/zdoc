@@ -3,7 +3,6 @@ http://www.zavakid.com/404.html
 http://www.zavakid.com/archive.html
 http://www.zavakid.com/atom.xml
 http://www.zavakid.com/categories.html
-http://www.zavakid.com/.htaccess
 http://www.zavakid.com/index.html
 http://www.zavakid.com/sitemap.txt
 http://www.zavakid.com/tags.html
