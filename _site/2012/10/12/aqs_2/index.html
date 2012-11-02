@@ -1,0 +1,345 @@
+
+<!DOCTYPE html>
+
+<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8" />
+
+  <!-- Set the viewport width to device width for mobile -->
+  <meta name="viewport" content="width=device-width" />
+  <title>Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(2)</title>
+  
+  
+
+  <link rel="alternate" type="application/rss+xml" title="说者无意 &raquo; Feed" href="/atom.xml" />
+  <link rel="stylesheet" href="/assets/themes/foundation/stylesheets/foundation.min.css">
+  <link rel="stylesheet" href="/assets/themes/foundation/stylesheets/app.css">
+  <link rel="stylesheet" href="/assets/themes/foundation/hl/styles/tomorrow-night-bright.css">
+  <script src="/assets/themes/foundation/javascripts/jquery.min.js"></script>
+  <script src="/assets/themes/foundation/javascripts/foundation.min.js"></script>
+  <script src="/assets/themes/foundation/hl/highlight.pack.js"></script>
+  <script src="/assets/themes/foundation/javascripts/app.js"></script>
+</head>
+
+</head>
+<body>
+
+  <!-- Nav Bar -->
+  <div class="row">
+    <div class="twelve columns">
+      <nav class="top-bar">
+      <ul>
+        <!-- Title Area -->
+        <li class="name">
+        <h1>
+          <a href="/">
+            说者无意
+          </a>
+        </h1>
+        </li>
+      </ul>
+      <section>
+      <!-- Left Nav Section -->
+      <ul class="left">
+        <li class="divider"></li>
+        
+        
+        
+
+
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/archive.html">存档</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/categories.html">分类</a></li>
+      	
+      
+    
+  
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/tags.html">标签</a></li>
+      	
+      
+    
+  
+
+
+
+
+        <li class="divider hide-for-small"></li>
+      </ul>
+      </section>
+      </nav>
+    </div>
+  </div>
+  <!-- End Nav -->
+  <!-- Main Page Content and Sidebar -->
+  <div class="row">
+    <!-- Main Blog Content -->
+    <div class="nine columns content" role="content">
+      
+<h1>Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(2)</h1>
+<article>
+<p>学习了AbstractQueuedSynchronizer 之后(Condition没有在上文做笔记，当应该不难理解)，接下来笔者就尝试着分析在JUC包中的各个同步器，其语义是如何实现的。</p>
+
+<h3 id='reentrantlock'>ReentrantLock</h3>
+
+<p>内部类Sync继承了AbstractQueuedSynchronizer。state表示锁被重入的次数。因为其是独占锁，所以只实现了tryRelease，isHeldExclusively方法，而tryAcquire则交由子类基于公平和非公平的策略来实现。</p>
+
+<p>公平的ReentrantLock会在每次tryAcquire的时候，都老老实实让排在队列前面的线程优先拿锁。而非公平锁则是发现state为0后，就马上去尝试设置state，如果不能成功，才进入AQS内部的队列老老实实的排队。</p>
+
+<h3 id='reentrantreadwritelock'>ReentrantReadWriteLock</h3>
+
+<p>此类最为复杂。内部类Sync继承了AbstractQueuedSynchronizer，同时内部类ReadLock和WriteLock内部共享了Sync，state这个int被划分成两部分，高位16个bit表示共享读锁，低位16个bit表示独占写锁。</p>
+
+<p>大概的工作方式是：读锁使用shared模式，复写tryAcquireShared和tryReleaseShared；写锁使用独占锁，复写tryAcquire和tryRelease。当线程要求锁住写锁的时候，内部会检查state是否为0；如果不为0，则检查此时是写状态还是读状态；如果是写状态，则检查持有写锁的是否是自己；如果是的话，则进行锁重入。锁住读锁也是这个道理，只不过是使用的shared的锁模式而已。</p>
+
+<h3 id='semaphore'>Semaphore</h3>
+
+<p>使用state表示信号量。可以想象，使用是的shared模式。在acquire的时候，会去比较state来判断是否可以成功。</p>
+
+<p>需要注意的是此类如果使用不当，则可能会有线程被挂住的问题，测试代码可以参见这里：<a href='https://gist.github.com/3879133'>https://gist.github.com/3879133</a>。</p>
+
+<h3 id='countdownlatch'>CountDownLatch</h3>
+
+<p>与Semaphore一样，都是非常简单的使用了state。</p>
+
+<h3 id='cyclicbarrier'>CyclicBarrier</h3>
+
+<p>内部使用的是ReentrantLock，利用了Condition来唤醒栅栏前的线程。</p>
+
+<h3 id='futuretask'>FutureTask</h3>
+
+<p>使用state来表示任务的执行状态。代码也相对比较简单。值得注意的是，FutureTask对于任务执行抛出的异常，是会捕捉住的（在get的时候才会给抛给你），如果在编写任务时候没有catch(Exception)，而导致有异常漏过业务代码，则很有可能产生不可预知的问题。</p>
+
+<p>比如，在使用 ScheduledExecutorService分发定时任务之后，而又不关心返回结果的时候，就可能会出现问题。所以一般对自己的线程，也应该处理自己线程的异常，这也是最佳实践的原则。</p>
+</article>
+
+<hr/>
+<dl class="tabs">
+  <dd class="active"><a href="#postMeta">文章信息</a></dd>
+  <dd><a href="#related">相关文章</a></dd>
+  <dd class="hide-for-small"><a href="#otherRead">别人也读过</a></dd>
+</dl>
+<ul class="tabs-content">
+
+  <li class="active" id="postMetaTab">
+    <dl class="sub-nav">
+      
+      <dt>分类:</dt>
+      
+      <dd><a href="/categories.html#java-ref">java</a></dd>
+      
+      <dd><a href="/categories.html#concurrent-ref">concurrent</a></dd>
+      
+      
+    
+      
+      <dt>标签:</dt>
+        
+        <dd><a href="/tags.html#AbstractQueuedSynchronizer-ref">AbstractQueuedSynchronizer</a></dd>
+        
+        <dd><a href="/tags.html#aqs-ref">aqs</a></dd>
+        
+        <dd><a href="/tags.html#concurrent-ref">concurrent</a></dd>
+        
+        <dd><a href="/tags.html#Java-ref">Java</a></dd>
+        
+        <dd><a href="/tags.html#并发-ref">并发</a></dd>
+        
+        
+    </dl>
+  </li>
+
+  <li id="relatedTab">
+  
+    <ul class="circle">
+    
+    <li><a href="/2012/10/12/aqs_1">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(1)</a></li>
+    
+    <li><a href="/2012/10/09/terminator_in_ubuntu_bugfix">terminator在ubuntu下有僵尸进程的解决</a></li>
+    
+    <li><a href="/2011/11/17/tokyo-tyrant-vs-redis">Tokyo Tyrant 与 Redis 的一些简单比较</a></li>
+    
+    <li><a href="/2011/07/30/unix-io-model">关于IO的同步,异步,阻塞,非阻塞</a></li>
+    
+    <li><a href="/2011/10/22/virtual-memory">内存学习——虚拟内存</a></li>
+    
+    <li><a href="/2011/10/16/why_virtual_memory">内存学习——为什么需要虚拟内存</a></li>
+    
+    <li><a href="/2012/07/31/resolved_ubuntu_hosts">解决 ubuntu 的 /etc/hosts 重启就被还原</a></li>
+    
+    <li><a href="/2012/05/05/using_terminator">terminator的高效使用</a></li>
+    
+    </ul>
+  
+  </li>
+
+  <li id="otherReadTab">
+  
+    <ul class="circle">
+    
+    <li><a href="/2012/05/05/using_terminator">terminator的高效使用</a></li>
+    
+    <li><a href="/2012/07/31/resolved_ubuntu_hosts">解决 ubuntu 的 /etc/hosts 重启就被还原</a></li>
+    
+    <li><a href="/2012/10/09/terminator_in_ubuntu_bugfix">terminator在ubuntu下有僵尸进程的解决</a></li>
+    
+    <li><a href="/2011/10/22/virtual-memory">内存学习——虚拟内存</a></li>
+    
+    <li><a href="/2011/07/30/unix-io-model">关于IO的同步,异步,阻塞,非阻塞</a></li>
+    
+    <li><a href="/2011/10/16/why_virtual_memory">内存学习——为什么需要虚拟内存</a></li>
+    
+    <li><a href="/2011/11/17/tokyo-tyrant-vs-redis">Tokyo Tyrant 与 Redis 的一些简单比较</a></li>
+    
+    <li><a href="/2012/10/12/aqs_1">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(1)</a></li>
+    
+    </ul>
+  
+  
+  </li>
+</ul>
+
+<hr/>
+
+
+
+  <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_developer = 1;
+    var disqus_shortname = 'zavakid'; // required: replace example with your forum shortname
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+
+
+
+    </div>
+    <!-- End Main Content -->
+
+    <!-- Sidebar -->
+    <aside class="three columns">
+      <div class="panel">
+        <h5>关于Zava</h5>
+        <p>程序员, 杭州, Linux, Java, Ruby, Bash, 爱折腾，喜欢开源, 踢业余足球, 听点收音机</p>
+        <p>Follow me with:
+          <a href="https://github.com/zavakid">github</a>
+          <br/>more about me:
+          <a href="http://about.me/zavakid"> read more</a>
+        </p>
+      </div>
+    </aside>
+    <!-- End Sidebar -->
+  </div>
+
+  <!-- End Main Content and Sidebar -->
+
+
+  <!-- Footer -->
+
+  <footer class="row">
+    <div class="twelve columns">
+      <hr />
+      <div class="row">
+        <div class="eight columns">
+          <p>Site content © 2012 Zava. Powered by jekyll and jekyllbootstra, customed by Zava</p>
+        </div>
+        <div class="four columns">
+          <ul class="inline-list right">
+            
+            
+            
+
+
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/sitemap.txt">网站地图</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+
+
+
+
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- End Footer -->
+  
+
+</body>
+</html>
+

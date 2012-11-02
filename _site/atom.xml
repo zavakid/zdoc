@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+ 
+ <title>说者无意</title>
+ <link href="http://www.zavakid.com/atom.xml" rel="self"/>
+ <link href="http://www.zavakid.com"/>
+ <updated>2012-11-02T19:30:43+08:00</updated>
+ <id>http://www.zavakid.com</id>
+ <author>
+   <name>Zava</name>
+   <email></email>
+ </author>
+
+ 
+ <entry>
+   <title>Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(2)</title>
+   <link href="http://www.zavakid.com/2012/10/12/aqs_2"/>
+   <updated>2012-10-12T00:00:00+08:00</updated>
+   <id>http://www.zavakid.com/2012/10/12/aqs_2</id>
+   <content type="html">&lt;p&gt;学习了AbstractQueuedSynchronizer 之后(Condition没有在上文做笔记，当应该不难理解)，接下来笔者就尝试着分析在JUC包中的各个同步器，其语义是如何实现的。&lt;/p&gt;
+
+&lt;h3 id='reentrantlock'&gt;ReentrantLock&lt;/h3&gt;
+
+&lt;p&gt;内部类Sync继承了AbstractQueuedSynchronizer。state表示锁被重入的次数。因为其是独占锁，所以只实现了tryRelease，isHeldExclusively方法，而tryAcquire则交由子类基于公平和非公平的策略来实现。&lt;/p&gt;
+
+&lt;p&gt;公平的ReentrantLock会在每次tryAcquire的时候，都老老实实让排在队列前面的线程优先拿锁。而非公平锁则是发现state为0后，就马上去尝试设置state，如果不能成功，才进入AQS内部的队列老老实实的排队。&lt;/p&gt;
+
+&lt;h3 id='reentrantreadwritelock'&gt;ReentrantReadWriteLock&lt;/h3&gt;
+
+&lt;p&gt;此类最为复杂。内部类Sync继承了AbstractQueuedSynchronizer，同时内部类ReadLock和WriteLock内部共享了Sync，state这个int被划分成两部分，高位16个bit表示共享读锁，低位16个bit表示独占写锁。&lt;/p&gt;
+
+&lt;p&gt;大概的工作方式是：读锁使用shared模式，复写tryAcquireShared和tryReleaseShared；写锁使用独占锁，复写tryAcquire和tryRelease。当线程要求锁住写锁的时候，内部会检查state是否为0；如果不为0，则检查此时是写状态还是读状态；如果是写状态，则检查持有写锁的是否是自己；如果是的话，则进行锁重入。锁住读锁也是这个道理，只不过是使用的shared的锁模式而已。&lt;/p&gt;
+
+&lt;h3 id='semaphore'&gt;Semaphore&lt;/h3&gt;
+
+&lt;p&gt;使用state表示信号量。可以想象，使用是的shared模式。在acquire的时候，会去比较state来判断是否可以成功。&lt;/p&gt;
+
+&lt;p&gt;需要注意的是此类如果使用不当，则可能会有线程被挂住的问题，测试代码可以参见这里：&lt;a href='https://gist.github.com/3879133'&gt;https://gist.github.com/3879133&lt;/a&gt;。&lt;/p&gt;
+
+&lt;h3 id='countdownlatch'&gt;CountDownLatch&lt;/h3&gt;
+
+&lt;p&gt;与Semaphore一样，都是非常简单的使用了state。&lt;/p&gt;
+
+&lt;h3 id='cyclicbarrier'&gt;CyclicBarrier&lt;/h3&gt;
+
+&lt;p&gt;内部使用的是ReentrantLock，利用了Condition来唤醒栅栏前的线程。&lt;/p&gt;
+
+&lt;h3 id='futuretask'&gt;FutureTask&lt;/h3&gt;
+
+&lt;p&gt;使用state来表示任务的执行状态。代码也相对比较简单。值得注意的是，FutureTask对于任务执行抛出的异常，是会捕捉住的（在get的时候才会给抛给你），如果在编写任务时候没有catch(Exception)，而导致有异常漏过业务代码，则很有可能产生不可预知的问题。&lt;/p&gt;
+
+&lt;p&gt;比如，在使用 ScheduledExecutorService分发定时任务之后，而又不关心返回结果的时候，就可能会出现问题。所以一般对自己的线程，也应该处理自己线程的异常，这也是最佳实践的原则。&lt;/p&gt;</content>
+ </entry>
+ 
+ <entry>
+   <title>Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(1)</title>
+   <link href="http://www.zavakid.com/2012/10/12/aqs_1"/>
+   <updated>2012-10-12T00:00:00+08:00</updated>
+   <id>http://www.zavakid.com/2012/10/12/aqs_1</id>
+   <content type="html">&lt;p&gt;Java中的并发包，是在Java代码中并发程序的热门话题。如果我们去读concurrent包的源码时，会发现其真正的核心是 AbstractQueuedSynchronizer ， 简称 AQS 框架 , 而 Doug Lea 大神正是此包的作者。&lt;/p&gt;
+
+&lt;p&gt;之前也看过一遍 AbstractQueuedSynchronize，但印象不深，只有依稀的印象。这次重新学习一遍，并整理出笔记，希望对自己或者是别人有用。当然了，笔者也是浅显的过一遍，很多细节也并不是完全理解。&lt;/p&gt;
+
+&lt;p&gt;建议读者先看这个系列的文章：&lt;a href='http://whitesock.iteye.com/blog/1336920'&gt;Inside AbstractQueuedSynchronizer&lt;/a&gt;，之后再继续本篇。&lt;/p&gt;
+
+&lt;p&gt;首先，AQS会对进行 acquire 而被阻塞的线程进行管理，说是管理，其实就是内部维护了一个FIFO队列，这个队列是一个双向链表。链头可以理解为是一个空的节点，除了链头以外，每个节点内部都持有着一个线程，同时，有着两个重要的字段：waitStatus 和 nextWaiter。nextWaiter一般是作用与在使用Condition时的队列。而waitStatus则有以下几个字段：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;SIGNAL&lt;/strong&gt; 表示下一个节点应该被唤醒。为什么是下一个节点？因为刚刚说了，这个FIFO队列，链头都是一个空的节点，但此节点的 waitStatus 正好就表示了要对下一节点做的事情&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;CANCELLED&lt;/strong&gt; 表示此节点持有的线程被中断，或者该线程为null了。节点只能是暂时停留在此状态，因为在线程进入AQS时，线程会找机会整理链表，包括删除CANCELLED状态的节点。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;CONDITION&lt;/strong&gt; 表示此节点是在另一个队列中 —— condition队列中。比如我们使用的ReentrantLock.newCondition()获得Condition对象进行await时，在AQS内部所产生的节点。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;PROPAGATE&lt;/strong&gt; 顾名思义，传播。这点比较难理解，需要仔细推敲。因为此状态是为共享同步器使用的。加入此状态，可以避免无谓的线程 park 和 unpark。按照我对代码的理解，这是对多个线程并发获取共享同步器(比如acquireShared)所进行的优化，至少有3个线程并发，但想要优化效果明显的话，可能需要几十个线程并发的获取共享同步器(比如acquireShared)，如果在并发量非常大的时候，对系统的吞吐量的作用应该不少。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;AbstractQueuedSynchronizer内置一个state字段，用来表示某种意义——当ReentrantLock使用AQS的时候，state被用来表示锁被重入的次数；当&amp;#8217;Semaphore&amp;#8217;使用AQS的时候，state则被用来表示当前还有多少信号量可被获取。&lt;/p&gt;
+
+&lt;p&gt;AbstractQueuedSynchronizer 支持两种模式，分别是独占式和共享式。两者进行获取和释放动作的思路都是差不多的。&lt;/p&gt;
+
+&lt;p&gt;获取同步器的流程如下：&lt;/p&gt;
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class='java'&gt;if(尝试获取成功){
+  return;
+}else{
+  加入等待队列;
+  park自己;
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;释放同步器的流程如下：&lt;/p&gt;
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class='java'&gt;if(尝试释放成功){
+  unpark等待队列中第一个节点;
+}else{
+  return false;
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;只要环绕着这两个思路去看AQS中的代码，相信应该可以明白其中的主要原理。&lt;/p&gt;</content>
+ </entry>
+ 
+ <entry>
+   <title>terminator在ubuntu下有僵尸进程的解决</title>
+   <link href="http://www.zavakid.com/2012/10/09/terminator_in_ubuntu_bugfix"/>
+   <updated>2012-10-09T00:00:00+08:00</updated>
+   <id>http://www.zavakid.com/2012/10/09/terminator_in_ubuntu_bugfix</id>
+   <content type="html">之前用一篇文章介绍了一个非常好用的软件：&lt;a href=&quot;/2012/05/05/using_terminator&quot;&gt;terminator&lt;/a&gt;。但在我使用了一段时间之后，发现每当我启动 terminator 的时候，都会有一个僵尸进程存在，于是搜索了一番，最后找到这个  &lt;a href=&quot;https://bugs.launchpad.net/terminator/+bug/885606&quot;&gt;terminator 的 bug&lt;/a&gt;。
+
+
+
+仔细查看一番，原来是路径找不到的path，按照连接中讨论的方案，修复也非常简单。
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;cd /use/lib
+sudo ln -s libvte9 vte&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt; 
+
+
+就是这么简单。
+
+
+</content>
+ </entry>
+ 
+ <entry>
+   <title>解决 ubuntu 的 /etc/hosts 重启就被还原</title>
+   <link href="http://www.zavakid.com/2012/07/31/resolved_ubuntu_hosts"/>
+   <updated>2012-07-31T00:00:00+08:00</updated>
+   <id>http://www.zavakid.com/2012/07/31/resolved_ubuntu_hosts</id>
+   <content type="html">&lt;p&gt;我用的是&lt;code&gt;Ubuntu&lt;/code&gt;的操作系统。之前碰到了一个问题： 为了方便登录公司机器，我经常修改&lt;code&gt;/etc/hosts&lt;/code&gt; ，让自己连接到别的机器方便些。&lt;/p&gt;
+
+&lt;p&gt;但就在前段时间，我发现一个问题：每当我修改完&lt;code&gt;/etc/hosts&lt;/code&gt;，在重启之后，会发现&lt;code&gt;/etc/hosts&lt;/code&gt;会被还原。这个非常让人奇怪，以前并不会出现这个问题。&lt;/p&gt;
+
+&lt;p&gt;经过一段时间的&lt;code&gt;google&lt;/code&gt;，终于发现原来是由&lt;code&gt;/etc/hosts.ac&lt;/code&gt;引起的！&lt;/p&gt;
+
+&lt;p&gt;每次重启的时候，你会发现&lt;code&gt;/etc/hosts&lt;/code&gt;的内容就和&lt;code&gt;/etc/hosts.ac&lt;/code&gt;的内容完全一样，当你改变&lt;code&gt;/etc/hosts.ac&lt;/code&gt;的内容之后，重启机器，会发现&lt;code&gt;/etc/hosts.ac&lt;/code&gt;的内容也被拷到&lt;code&gt;/etc/hosts&lt;/code&gt;中去了。&lt;/p&gt;
+
+&lt;p&gt;为什么会有&lt;code&gt;/etc/hosts.ac&lt;/code&gt;？ 原来是公司的&lt;code&gt;VPN&lt;/code&gt;从之前的&lt;code&gt;Array VPN&lt;/code&gt;换成了思科提供的VPN，这样我就使用了思科的&lt;code&gt;Any Connect VPN Client&lt;/code&gt;客户端。也正是这个客户端，新增了这个&lt;code&gt;/etc/hosts.ac&lt;/code&gt;，想想&lt;code&gt;ac&lt;/code&gt;就应该是&lt;code&gt;Any Connect&lt;/code&gt;的简写了。&lt;/p&gt;
+
+&lt;p&gt;至此，发现了问题，也就好解决了：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;比较暴力的解决方式是：直接修改 /etc/hosts.ac 的内容。当然，你也可以写一个脚本去修改这个文件。&lt;/li&gt;
+&lt;li&gt;比较优雅的解决方式是：我还没有找到，抛砖引玉，希望能听到你提供的优雅方案&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;附上在&lt;code&gt;google&lt;/code&gt;上搜索到的资料：&lt;a href=&quot;http://ubuntuforums.org/showthread.php?t=1896148&quot;&gt;hosts file keeps getting reset/rewritten, hosts.ac the culprit&lt;/a&gt;&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>terminator的高效使用</title>
+   <link href="http://www.zavakid.com/2012/05/05/using_terminator"/>
+   <updated>2012-05-05T00:00:00+08:00</updated>
+   <id>http://www.zavakid.com/2012/05/05/using_terminator</id>
+   <content type="html">&lt;p&gt;平时使用的是 ubuntu，难免就需要经常使用终端，之前一直用的是 ubuntu 自带的终端。后来找到了 terminator 这款非常不错的终端软件。（ &lt;a href='http://software.jessies.org/terminator/'&gt;官方地址&lt;/a&gt; ）&lt;/p&gt;
+
+&lt;p&gt;刚刚接触一款新的软件，使用上肯定比之前的慢。不过经过10分钟的使用，我发现 terminator 很容易上手，而且使用上非常方便，以致于我决定以后不管是在个人还是在公司的电脑上，都要慢慢的使用这款软，以提高自己的工作效率。&lt;/p&gt;
+
+&lt;p&gt;ubuntu 默认的终端 —— gnome-terminal，只有 tab 这一概念，并且支持以 &lt;code&gt;alt + 数字&lt;/code&gt; 的快捷键对 tab 进行切换；同时，还可以使用 &lt;code&gt;ctrl+shift+t&lt;/code&gt; 的快捷方式新建 tab。并且，还有 bash 中 readline 默认提供的 emacs 快捷键（当然，你也可以设置成 vi mode，想想可以用 vi 模式在 sh 下操作的快感吧 :-) ）。&lt;/p&gt;
+
+&lt;p&gt;不过，所有 gnome-terminal 有的功能， terminator 都有。出此之外，terminator 还提供了一些很方便的功能：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;允许在一个 tab 中打开多个终端 —— 这个可以满足我一边 &lt;code&gt;man&lt;/code&gt; 一个命令，一边练习&lt;/li&gt;
+&lt;li&gt;允许同时操作多个终端 —— 这个功能使用的场景不多。但可以想象，如果你同时操作多台服务器，倒可以使用使用。先&lt;code&gt;cd&lt;/code&gt;回到HOME，然后就进行自己的命令了。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;terminator默认的快捷键没有&lt;code&gt;alt+number&lt;/code&gt;，所以我自己设置了一份快捷键，并放在了：&lt;a href='https://github.com/zavakid/terminator-config'&gt;github terminator config&lt;/a&gt; 上，欢迎大家fork之。另外关于 terminator 的僵尸进程问题，已有解决方案，&lt;a href='/2012/10/09/terminator_in_ubuntu_bugfix'&gt;详见这里&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;下面是使用的几张截图：&lt;/p&gt;
+&lt;img alt='同一tab下多个终端' src='http://pic.yupoo.com/zavakid/BXuv7KOo/medium.jpg' /&gt;&lt;img alt='广播命令，同时操作多个终端' src='http://pic.yupoo.com/zavakid/BXuvasam/medium.jpg' /&gt;</content>
+ </entry>
+ 
+ <entry>
+   <title>Tokyo Tyrant 与 Redis 的一些简单比较</title>
+   <link href="http://www.zavakid.com/2011/11/17/tokyo-tyrant-vs-redis"/>
+   <updated>2011-11-17T00:00:00+08:00</updated>
+   <id>http://www.zavakid.com/2011/11/17/tokyo-tyrant-vs-redis</id>
+   <content type="html">之前简单的看了一下 &lt;a href=&quot;http://fallabs.com/tokyotyrant/&quot; target=&quot;_blank&quot;&gt;Tokyo Tyrant&lt;/a&gt;(包括 &lt;a href=&quot;http://fallabs.com/tokyocabinet/&quot; target=&quot;_blank&quot;&gt;Tokyo Cabint&lt;/a&gt;) 在 hash 存储上的一些实现，最近 &lt;a href=&quot;http://redis.io&quot; target=&quot;_blank&quot;&gt;Redis&lt;/a&gt; 又比较火热，因此，自己也尝试性的去了解了一下 Redis，并且结合 Tokyo Tyrant（以下简称 tt server），说说自己对这两种产品的看法。
+
+&lt;h3&gt;服务端处理模型&lt;/h3&gt;
+在 tt server 中，是以多线程的方式向客户端提供服务的：一个主线程负责 accept 客户端的socket，一定数目的线程（可以指定）进行读写服务，同时，也有一定数目的timer线程，专门用来负责定时的任务，比如一些定时的 &lt;a href=&quot;http://www.lua.org/&quot; target=&quot;_blank&quot;&gt;Lua&lt;/a&gt; 脚本，同时，如果是slaver，则会有专门一个timer线程，定时负责 do slave 的工作。
+而在 Redis 中，采用的则是单线程的模型来处理所有的客户端请求。
+
+应该说这两种模型，都有各自的优点和缺点。多线程可以利用多核CPU的计算能力，但因此也会增加CAS自旋或者是锁的一些消耗，同时，如果线程过多，那么线程之间上下文的切换，也是一种消耗。
+
+而如果是单线程，则可以完全避免锁的消耗，同时，上下文切换消耗也不需要过多的考虑（但仍需要考虑系统上还有其他的进程），这会让单个CPU的利用率比较高。
+但是，单线程服务，就意味着不能利用多核。同时，服务端对客户端过来的请求是串行执行和响应的，这也在一定程度上，会影响服务端的并发能力，特别是在有些请求执行比较耗时的情况下。想象一下，就这么一个线程，可能正在拼命的执行客户端A的一个请求，而此时客户端B，C，D的请求，还仍在等着线程执行完成之后再去搭理他们。
+
+因此，像 redis 这种单线程的服务模型，如果对一些请求的处理相对较耗时，那其 TPS 也就相应的不能提高上去，也就是说其吞吐量会提不上去；但反过来想， redis 如果能控制每次请求在执行过程是简短并且快速的，那么也许使用单线程，反而会比多线程有更好的性能，毕竟单线程少了上下文切换，以及锁或者 cas 的开销。
+
+而 tt server 则中规中矩：一个线程负责 accept ，一定数目的线程则进行请求的处理。因此，我们在设置 tt server 的时候，也应尽量考虑好工作线程的数目，尽量让CPU数目与工作线程数目一致或者略少。原则是最好的发挥多核CPU的作用，同时又不让工作线程之间去竞争CPU。当然，这是需要不停的去实验的。
+
+所以，在使用 redis 的时候，应尽量不要去使用一些相对耗时的请求；同时，我想 redis 的作者，也应该会尽量优化每种请求的执行速度（至少是一些常用的请求）。
+
+而在使用 tt server 的时候，需要仔细调整使用的工作线程数目，让每个CPU都物尽其用。
+
+&lt;h3&gt;数据存储方式、持久化比较&lt;/h3&gt;
+tt server 的 hash 数据库，是使用文件的方式，然后利用 &lt;a href=&quot;http://kernel.org/doc/man-pages/online/pages/man2/munmap.2.html&quot; target=&quot;_blank&quot;&gt;mmap&lt;/a&gt; 系统调用映射到内存中。
+这样，就可以利用操作系统的机制，不定期地将数据 flush 到磁盘中。同时，tt server 也提供了 sync 命令，可以让客户端手动将数据 flush 到磁盘中(使用 msync 系统调用)。最后，在关闭 tt server 进程的时候，应该使用 kill -15(TERM信号)，或者使用 ttserver 自带的命令：ttserver -kl pid 进行关闭。这样 ttserver 会先把数据 flush 到磁盘上，再退出进程。
+
+同时， tt server 也提供了 ulog 的方式，对数据库的变更操作进行记录，同样，&lt;a href=&quot;http://fallabs.com/tokyotyrant/spex.html#tutorial&quot; target=&quot;_blank&quot;&gt;可以利用 ulog 对 ttserver 进行恢复&lt;/a&gt;，但 ulog 的主要目的，按照我的理解，应是用来实现 replication 的。
+
+而 redis 则是将数据直接写在了内存中，然后利用 &lt;a href=&quot;http://redis.io/topics/persistence&quot; target=&quot;_blank&quot;&gt;redis 的持久化机制&lt;/a&gt;，将数据写到磁盘中。
+
+redis 提供了两种持久化机制，分别是 RDB （redis DB） 和 AOF （appending only file）。
+RDB的过程是：redis 进程 fork 一个子进程，然后子进程对内存中的数据写到一个临时文件，这个时候，两个进程就利用了操作系统的 copy on write 机制，共享一份内存数据，只有当父进程（也就是 redis 进程）对原有的数据进行修改或者删除之后，操作系统才为 redis 进程重新开辟新的内存空间（以页为单位）。Redis 本身也提供了 bgsave（background save） 命令支持手动将数据持久化（ save 命令是同步的，而 redis 只有一个线程在服务，结果就是影响 redis 的性能，特别是在大数据量的情况下）。
+
+AOF的过程是：在执行每次命令之后，或者每隔1秒钟之后，Redis会有一个线程将命令以 redis 协议的格式 append 到文件中，这也就是AOF名字的由来，这些命令当然是非只读的，只读不更改数据库，没有必要记录下来。
+这里会有两个问题：
+1、每次命令之后写文件，还是隔1秒之后写文件，影响会有哪些？
+2、这些文件总会不断的膨胀，如何对文件进行压缩呢？
+
+对于第一个问题，也是一个权衡的问题，如果每次命令之后都进行一次写磁盘操作，那么IO的程度可想而知，肯定会影响服务器性能(使用 write 系统调用，会因为文件系统而进入 page buffer，并非立刻写磁盘，而调用 fsync ，则会将 page buffer 中的数据写入磁盘，进行 IO 操作)。而如果每隔1秒进行一次 fsync，那么在这一秒和上一秒之间，如果服务器突然断电，那很有可能这些数据就会丢失。对于这个问题，redis 默认给出的方案是每隔1秒进行一次write。对于1秒的给定，我想，也是基于性能和数据安全的权衡，在性能和数据安全方面都可以让人接受。
+
+对于第二个问题，redis 提供了 rewrite 的机制：当 aof 过大的时候，redis可以自动的进行 rewrite （从 redis 2.4 开始）。rewrite 的过程也是 fork 一个子进程；然后打开一个临时文件，将内存中的数据写入到文件中；在此期间，主进程继续将数据写入老的 aof 文件，同时也会将数据写入到一个内存缓存中；等子进程完成之后，主进程会将缓存中的数据写入到临时文件，再将临时文件进行rename，替换掉原来的文件。这样，就实现了写 aof 过程中的rewrite。
+
+从数据的存储方式来说，尽管 tt server 和 redis 都是在内存上面进行数据的读写，我但认为两个产品对数据存储方式的观点是不一样的。
+tt server 是将磁盘上的文件当作主要的存储方式，然后使用 mmap 将文件映射到内存中。本质上，这是数据应该存储在磁盘中的观点。
+而 redis ，一开始就是将数据直接存储在内存中，在之后的持久化过程中，可以理解成只是将数据的日志写入到磁盘中。本质上，这是把数据应该存储在内存中的观点。
+
+可见，由于作者的观点不一样，也就造成了两种实现方式不一样的产品，这还是比较有意思的。
+从这个层面上来讲，我更加喜欢 redis 作者的思路，很可能作者就是受到 &lt;a href=&quot;http://www.infoq.com/cn/news/2008/07/ram-is-disk&quot; target=&quot;_blank&quot;&gt;内存是新的磁盘，磁盘是新的磁带&lt;/a&gt; 的启发。
+
+redis自带实现的VM将在以后不再使用(2.4将是最后一个自带vm功能的版本)，作者认为数据就应该是放在物理内存中的，没有必要要将数据交换到磁盘中，磁盘只是作为日志的一种存储方式。这也是“内存是新的硬盘”思路的体现。
+
+&lt;h3&gt;复制方式比较&lt;/h3&gt;
+tt server 和 redis 都支持 master-slave 方式的通信复制。
+tt server 使用了 ulog，并且 slaver 使用了 rts（replication time-stamp） 文件，对上一次的复制时间戳进行保存，实现了复制的续传。
+
+而 redis 则是每次 slave 重新连接到 master 时，master 会将数据进行全量的复制给 slave，而不是增量式的。redis 复制的方式与使用 RDB 持久化方式原理基本相同，也是使用子进程进行内存的dump，在此期间，父进程收集改变数据库的命令，等把子进程收集的数据传输给 slave 之后，再将此期间收集到的数据也传输给 slave。
+
+如果从 slave 数据重建的角度来看，tt server 支持断点复制的实现，应该说是比 redis 先进了一步。
+
+&lt;h3&gt;性能方面比较&lt;/h3&gt;
+新浪的 Tim Yang 做了 &lt;a href=&quot;http://timyang.net/data/mcdb-tt-redis/&quot; target=&quot;_blank&quot;&gt;memcacheDB、Redis、tt server 的性能测试&lt;/a&gt;。这是比较早期的测试，相信随着版本的升级，两者的性能都会有所提升。不过按照这个测试的结果来看，redis 在数据量不多（500W）并且value 较小的时候，性能表现是很优越的；而对于稍大一些的 value ，tt 则在写方面表现很出色，但写的性能，相对较差。相比之下，redis的读写性能，倒是比较平衡。
+但觉得随着时间的迁移，这个测试的参考性可能会打折扣，如果有可能的话，希望能看到更多的测试结果。
+
+&lt;h3&gt;总结&lt;/h3&gt;
+1. 从服务器模型来说，tt server 使用 acceptor + workers 的方式提供服务，能够利用多核的性能，但随着而来的是一些同步、加锁的复杂和开销；而 redis 使用了单线程提供服务，利用不了多核，但如果能够将每次服务的速度控制下来，对单个CPU的利用率，反而可以提高。如果想利用机器的多核性能，也可以在一台机器上搭建多个 redis 实例，但可能更要考虑到机器的内存限制。
+
+2. 从数据存储的方式来说，尽管 tt server 和 redis 都是将数据存储在内存中，但我认为两个产品对“数据是如何存储”的观点是有所不同的。tt server 认为数据是存储在文件中的，只是通过内存映射，将对文件的操作转化成对内存的操作；而 redis 是直接将数据存储到内存中，之后再通过持久化等机制，将数据备份到磁盘中。虽然之前 redis 自己实现了 vm 功能，但redis 后续会取消掉自己实现的 vm 功能，按照“内存是最新的磁盘”这种思路，也就不难理解了：除了增加复杂度之外，还有一个因素，那就是 redis 不需要 vm，能存的数据大小，只能限制在物理内存的范围以内。
+从这个方面来将，redis 后续的版本可能就会限制用户使用的数据库大小是要小于物理内存的，而如果使用 tt server ，则用户须让使用数据文件小于物理内存，否则，发生内存交换，是非常损性能的。
+总而言之，在使用内存数据库的时候，应该有意识的对数据进行容量规划，避免出现物理内存不够而引起的内存交换。
+
+3. tt server 和 redis 的策略都是从 slaver 配置 master ，而不是从 master 配置 slaver 关系，这样就减轻了 master 的负担，同时，master 不必知道自己有多少个 slaver ，就可以横向的扩增 slaver 。但 tt server 支持所谓的断点复制。需要考虑到的是 redis 在做 replication 的时候，是 fork 一个子进程工作的，如果有多个 replicate 的请求，redis 依然还是一个子进程在工作。这样也会对多个 slaver 产生一定的复制延时。
+
+4. redis 在工作方式上，会 fork 子进程，因此 redis 在容量规划上，需要考虑到 redis fork 出子进程所需要的内存和 CPU，在最差的情况下：bgsave时候，父子两个进程虽然可以使用 copy on write 的好处，但如果在此期间整个表记录都被修改了，那就足足需要一倍的内存，否则，此时父进程会进行 copy ，父进程很可能没有内存可用，就需要进行内存交换，由此所带来的性能代价也是非常高的；与此同时，子进程子在 bgsave 的时候，需要对数据进行压缩，压缩是计算密集型的，因此最好不要和父进程使用同一个CPU，因为父进程使用了单线程事件处理的模型，这种模型的优点是充分利用CPU的资源，如果出现子进程与父进程抢CPU，那就得不偿失了。
+
+5. redis 支持较多的数据结构，但在使用 sort 等时间复杂性较多的命令时，也会稍微的降低 redis 的性能，应该对这些耗时的命令进行一定的监控。
+</content>
+ </entry>
+ 
+ <entry>
+   <title>内存学习——虚拟内存</title>
+   <link href="http://www.zavakid.com/2011/10/22/virtual-memory"/>
+   <updated>2011-10-22T00:00:00+08:00</updated>
+   <id>http://www.zavakid.com/2011/10/22/virtual-memory</id>
+   <content type="html">接着上次&lt;a href=&quot;http://www.zavakid.com/119&quot; title=&quot;内存学习——为什么需要虚拟内存&quot; target=&quot;_blank&quot;&gt;学习虚拟内存&lt;/a&gt;的文章继续学习。
+
+&lt;h3&gt;虚拟内存如何实现&lt;/h3&gt;
+虚拟内存是以虚拟页面的单位组成的。
+虚拟页面使用磁盘来作为自己的存储，一些经常使用到的页面，才会被load到内存中，此时，就相当于把内存看成是磁盘的一个缓存。
+因为每次都load到内存的是一个虚拟页面，所以对应的，内存就需要有一个物理页面能过装下这个虚拟页面。因此，物理内存也被分隔为一个一个的物理页面。虚拟页面和物理页面应该是相等的。
+既然要把虚拟页面和物理页面关联起来，那么就需要维护虚拟页面和物理页面之间的关系。
+因此，就又需要这样一张页面来维持这样的关系，通常，这张表是放在物理内存中，由操作系统来维护的,叫做页表。
+
+基于这种实现，实际上虚拟内存就有能力&lt;a href=&quot;http://www.zavakid.com/119&quot; title=&quot;内存学习——为什么需要虚拟内存&quot; target=&quot;_blank&quot;&gt;解决之前所遇到的问题&lt;/a&gt;：每个进程都可以使用相同的虚拟地址，操作系统会将虚拟地址翻译成不同的物理地址，但对进程来说，是透明的；每个进程也都不会因为物理内存受限而不能加载运行，实际上虚拟内存是存在磁盘的，而通常磁盘要比内存大很多（虚拟页面一般放在磁盘的swap分区）；同时，虚拟内存通过维护虚拟页面和物理页面的页面，可以实现权限控制，而这种权限控制，就是搭载在页面上面的，因此，一般的内存权限控制，都是以页为单位的。
+
+&lt;h3&gt;虚拟内存的访问过程&lt;/h3&gt;
+当程序访问的虚拟地址在页表中找不到对应的物理页时，这时候，就会向磁盘读取此虚拟页面，并且将此虚拟页面与一个物理页面关联起来，并且在页面记录这种关系。当物理页面都已经被占满的时候，操作系统就会踢掉一个用的少的物理页面，从而让这个新的虚拟页面装入物理页面。 —— 这和我们使用缓存的逻辑没有什么不同 —— 操作系统将虚拟页面放入物理页面的动作，是由异常机制触发的。
+而当程序中访问的虚拟地址已经在页表中有对应的物理页面时，这一切就变得相当轻松了。同时，内存权限的控制，也是通过在页表中的记录进行的。
+
+&lt;h3&gt;总结&lt;/h3&gt;
+虚拟内存通过一个存储器层次的概念，将使用物理内存碰到的几个限制，就都统统解决了。我想，这和大学时候老师教我们在解决难题时候的思路一样，进行空间的坐标转换，换个角度，问题说不定就得以迅速解决，而且简单，高效。
+</content>
+ </entry>
+ 
+ <entry>
+   <title>内存学习——为什么需要虚拟内存</title>
+   <link href="http://www.zavakid.com/2011/10/16/why_virtual_memory"/>
+   <updated>2011-10-16T00:00:00+08:00</updated>
+   <id>http://www.zavakid.com/2011/10/16/why_virtual_memory</id>
+   <content type="html">关于虚拟内存，物理内存，我有蛮多概念都是很模糊的，今天下午看了一下虚拟内存，也算是有了一点小收获，本文就针对为什么需要有虚拟内存的理解写下来。
+
+同时，我也希望自己能够陆续学习linux内存管理的知识，并且写出一些文章，来记录自己的一些理解。
+如果您觉得有任何问题，可以留下评论，我们一起讨论，毕竟越辩越明。
+
+&lt;h3&gt;为什么要使用虚拟内存&lt;/h3&gt;
+之前的计算机系统，是使用物理地址来使用内存的，这样，CPU就根据某个寄存器中相应的值，直接到物理内存去取值了。
+这样的好处就是非常直接，非常容易理解。
+
+而缺点是，我们需要知道物理地址的值，每次程序开始执行，也就是执行程序从磁盘被load到物理内存中之后，我们必须告诉CPU，程序是从哪一个地址开始执行的（即PC寄存器的值）；还有一个致命的缺点是：程序使用的内存会被物理内存所限制，比如我们的机器上只有512M内存，那我们的程序就不能使用需占1G内存的程序了。这点或许是催生虚拟内存产生的最主要原因。
+
+&lt;h3&gt;虚拟内存的概念&lt;/h3&gt;
+为了解决上面的的问题，就产生了虚拟内存的概念。那什么是虚拟内存呢？这里我先说说自己对&lt;strong&gt;存储器层次结构&lt;/strong&gt;的理解。
+
+计算机中有一种存储器层次的原则。我的理解是，CPU使用的数据都是基于寄存器的，如果我们的寄存器足够的大和多并且足够便宜，那么也就没有后来那么多的东西产生了。而问题就是寄存器足够快，但其造价却非常昂贵，因此，考虑到成本，就有了之后的CPU高速缓存，主存（就是我们常说的内存）和硬盘，甚至磁带等存储器了。
+
+那么，计算机是如何让这些速度快慢不一、容量大小不一的存储器在一起工作的呢？一个方案就是&lt;strong&gt;存储器层次结构&lt;/strong&gt;。
+
+对于这个存储器层次结构，我的理解是：CPU是和寄存器打交道的，但寄存器的容量毕竟有限，因此就需要高速缓存存储器来作为寄存器的缓存，当有些数据在寄存器中找不到时，CPU就可以去寻找高速缓存这个存储器中的内容，如果告诉缓存器还没有这个数据，那我就去主存中再去寻找这个数据，如果主存中也还没有，那就去磁盘中找吧。
+
+这也是我对存储器层次结构的一个理解。
+
+以上说了一通，但都没有提到虚拟内存，那虚拟内存究竟是什么？他在这个层次中处于哪个位置呢？
+
+实际上，按照这种模型去思考的话，就可以这样理解：&lt;strong&gt;虚拟内存就是去解决主存到磁盘这个层次的方案&lt;/strong&gt;。
+
+没错，我认为虚拟内存就是一种方案，而且他是非常重要的，为什么呢？众所周知，CPU的速度很快，内存就是作为匹配CPU和磁盘之间速度的一个中间层，高速缓存其实也是这样一个缓存的角色，但问题是，如果高速缓存失效，那么CPU会去访问内存，这样的速度只是降低了十倍的数量级；而如果是内存失效，让CPU去访问磁盘的话，这样的速度却是降低了十万倍到百万倍的数量级。
+
+可见，在寄存器、高速缓存和主存之间缓存的失效，结果还是可以让人接受的（想想java的volatile关键字），但主存和磁盘之间缓存的失效，就会给程序造成比较大的性能影响了，所以我们应该努力避免主存的失效，这也是虚拟内存所必须要解决和面对的问题之一。
+
+&lt;h3&gt;总结&lt;/h3&gt;
+其实可以认为，程序使用的内存，都是用的虚拟内存，因此也就没有了物理内存的限制（但还是限制于计算机的寻址位数，比如32位和64位，因为虚拟内存系统需要使用到物理内存）。他可以把自己的一部分放在物理内存中，还有一部分当做缓存放到磁盘中。另外，虚拟内存有相应的虚拟地址，因此，他就可以做到对于每一个程序来说，使用的都是相同的虚拟地址，这些虚拟地址，则可以映射到不同的物理地址，也就是说每个程序都可以把自己想象成自己拥有整台机器的内存。
+</content>
+ </entry>
+ 
+ <entry>
+   <title>关于IO的同步,异步,阻塞,非阻塞</title>
+   <link href="http://www.zavakid.com/2011/07/30/unix-io-model"/>
+   <updated>2011-07-30T00:00:00+08:00</updated>
+   <id>http://www.zavakid.com/2011/07/30/unix-io-model</id>
+   <content type="html">上次写了一篇文章：&lt;a title=&quot;Unix IO模型学习&quot; href=&quot;http://www.zavakid.com/70&quot; target=&quot;_blank&quot;&gt;Unix IO 模型学习&lt;/a&gt;。恰巧在这次周会的时候，&lt;a href=&quot;http://weibo.com/fp1203&quot; target=&quot;_blank&quot;&gt;@fp1203&lt;/a&gt; (&lt;a title=&quot;黄金档&quot; href=&quot;http://www.goldendoc.org/&quot; target=&quot;_blank&quot;&gt;goldendoc&lt;/a&gt;成员之一) 正好在讲解poll和epoll的底层实现。中途正好讨论了网络IO的同步、异步、阻塞、非阻塞的概念，当时讲下来，大家的理解各不相同，各执己见。搜索了网络上的一些文章，观点也各不相同，甚至连&lt;a href=&quot;http://en.wikipedia.org/wiki/Asynchronous_I/O&quot; target=&quot;_blank&quot;&gt;wiki&lt;/a&gt;也将异步和非阻塞当成一个概念在解释。
+
+虽然网络上充斥了大量关于同步、异步、阻塞、非阻塞的文章，但大都是抄来抄去，没有一个权威的说法。但我找到了&lt;a href=&quot;http://blog.csdn.net/historyasamirror/article/details/5778378&quot; target=&quot;_blank&quot;&gt;这一篇文章&lt;/a&gt;，该文章引用了《UNIX网络编程 卷1》的介绍，这本书的作者是Richard Stevens。如果有Richard Stevens在这方面的定义或者结论，那么我想，这应该是比较有说服力的了。
+
+关于《UNIX网络编程 卷1》这本书，我特意找了英文原版，也共享出来了：大家可以下载&lt;a href=&quot;http://u.115.com/file/bh06p2sr#UNIX_Network_Programming.chm&quot; target=&quot;_blank&quot;&gt;《UNIX网络编程 卷1》的英文原版&lt;/a&gt;（CHM格式）。
+
+我看了6.2这节内容，这节内容就是讲IO模型的。刚刚提到的那篇文章，几乎就是翻译这个6.2节的。应该说，这个6.2节，对同步和异步的讲解，算是很清楚的。
+
+下面是我自己理解的重点。
+&lt;h3&gt;IO模型&lt;/h3&gt;
+目前unix存在五种IO模型（这也和上一篇文章：&lt;a title=&quot;Unix IO模型学习&quot; href=&quot;http://www.zavakid.com/70&quot; target=&quot;_blank&quot;&gt;Unix IO 模型&lt;/a&gt; 中提到的一致），分别是：
+&lt;ul&gt;
+	&lt;li&gt;阻塞型 IO（blocking I/O）&lt;/li&gt;
+	&lt;li&gt;非阻塞性IO（nonblocking I/O）&lt;/li&gt;
+	&lt;li&gt;IO多路复用（I/O multiplexing）&lt;/li&gt;
+	&lt;li&gt;信号驱动IO（signal driven I/O）&lt;/li&gt;
+	&lt;li&gt;异步IO（asynchronous I/O）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;IO的两个阶段&lt;/h3&gt;
+&lt;ol&gt;
+	&lt;li&gt;等待数据准备好&lt;/li&gt;
+	&lt;li&gt;将数据从内核缓冲区复制到用户进程缓冲区&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3&gt;同步，异步的区别&lt;/h3&gt;
+那么究竟什么是同步和异步的区别呢？请重点读一下&lt;a title=&quot;点此下载&quot; href=&quot;http://u.115.com/file/bh06p2sr#UNIX_Network_Programming.chm&quot; target=&quot;_blank&quot;&gt;原文&lt;/a&gt;6.2节中的信号驱动IO和异步IO中的比较。最后总结出来是：
+&lt;ul&gt;
+	&lt;li&gt;同步IO，需要用户进程主动将存放在内核缓冲区中的数据拷贝到用户进程中。&lt;/li&gt;
+	&lt;li&gt;异步IO，内核会自动将数据从内核缓冲区拷贝到用户缓冲区，然后再通知用户。&lt;/li&gt;
+&lt;/ul&gt;
+这样，同步和异步的概念就非常明显了。以上的五种IO模型，前面四种都是同步的，只有第五种IO模型才是异步的IO。
+&lt;h3&gt;阻塞和非阻塞&lt;/h3&gt;
+那么阻塞和非阻塞呢？注意到以上五个模型。阻塞IO，非阻塞IO，只是上面的五个模型中的两个。阻塞，非阻塞，是针对单个进程而言的。
+
+当对多路复用IO进行调用时，比如使用poll。需注意的是，poll是系统调用，当调用poll的时候，其实已经是陷入了内核，是内核线程在跑了。因此对于调用poll的用户进程来讲，此时是阻塞的。
+
+因为poll的底层实现，是去扫描每个文件描述符（fd），而如果要对感兴趣的fd进行扫描，那么只能将每个描述符设置成非阻塞的形式（对于用户进程来讲，设置fd是阻塞还是非阻塞，可以使用系统调用fcntl），这样才有可能进行扫描。如果扫描当中，发现有可读（如果可读是用户感兴趣的）的fd，那么select就在用户进程层面就会返回，并且告知用户进程哪些fd是可读的。
+
+这时候，用户进程仍然需要使用read的系统调用，将fd的数据，从内核缓冲区拷贝到用户进程缓冲区（这也是poll为同步IO的原因）。
+
+那么此时的read是阻塞还是非阻塞呢？这就要看fd的状态了，如果fd被设置成了非阻塞，那么此时的read就是非阻塞的；如果fd被设置成了阻塞，那么此时的read就是阻塞的。
+
+不过程序已经执行到了这时候，不管fd是阻塞还是非阻塞，都没有任何区别，因为之前的poll，就是知道有数据准备好了才返回的，也就是说内核缓冲区已经有了数据，此时进行read，是肯定能够将数据拷贝到用户进程缓冲区的。
+
+但如果换种想法，如果poll是因为超时返回的，而我们又对一个fd（此fd是被poll轮询过的）进行read调用，那么此时是阻塞还是非阻塞，就非常有意义了，对吧！
+&lt;h3&gt;结论&lt;/h3&gt;
+&lt;ol&gt;
+	&lt;li&gt;判断IO是同步还是异步，是看谁主动将&lt;strong&gt;数据&lt;/strong&gt;拷贝到用户进程。&lt;/li&gt;
+	&lt;li&gt;select或者poll，epoll，是同步调用，进行此调用的用户进程也处于阻塞状态。&lt;/li&gt;
+	&lt;li&gt;javaScript或者nodejs中的读取网络（文件）数据，然后提供回调函数进行处理，是异步IO。&lt;/li&gt;
+&lt;/ol&gt;
+</content>
+ </entry>
+ 
+ 
+</feed>

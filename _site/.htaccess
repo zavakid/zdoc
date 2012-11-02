@@ -1,0 +1,13 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine on
+  
+  RedirectMatch 301 ^/203[/]$ http://www.zavakid.com/2012/10/12/aqs_2
+  RedirectMatch 301 ^/207[/]$ http://www.zavakid.com/2012/10/12/aqs_1
+  RedirectMatch 301 ^/197[/]$ http://www.zavakid.com/2012/10/09/terminator_in_ubuntu_bugfix
+  RedirectMatch 301 ^/193[/]$ http://www.zavakid.com/2012/07/31/resolved_ubuntu_hosts
+  RedirectMatch 301 ^/178[/]$ http://www.zavakid.com/2012/05/05/using_terminator
+  RedirectMatch 301 ^/127[/]$ http://www.zavakid.com/2011/11/17/tokyo-tyrant-vs-redis
+  RedirectMatch 301 ^/123[/]$ http://www.zavakid.com/2011/10/22/virtual-memory2011/10/22/virtual-memory
+  RedirectMatch 301 ^/119[/]$ http://www.zavakid.com/2011/10/16/why_virtual_memory
+  RedirectMatch 301 ^/96[/]$ http://www.zavakid.com/2011/07/30/unix-io-model
+</IfModule>

@@ -1,0 +1,383 @@
+
+<!DOCTYPE html>
+
+<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8" />
+
+  <!-- Set the viewport width to device width for mobile -->
+  <meta name="viewport" content="width=device-width" />
+  <title>Tokyo Tyrant 与 Redis 的一些简单比较</title>
+  
+  
+
+  <link rel="alternate" type="application/rss+xml" title="说者无意 &raquo; Feed" href="/atom.xml" />
+  <link rel="stylesheet" href="/assets/themes/foundation/stylesheets/foundation.min.css">
+  <link rel="stylesheet" href="/assets/themes/foundation/stylesheets/app.css">
+  <link rel="stylesheet" href="/assets/themes/foundation/hl/styles/tomorrow-night-bright.css">
+  <script src="/assets/themes/foundation/javascripts/jquery.min.js"></script>
+  <script src="/assets/themes/foundation/javascripts/foundation.min.js"></script>
+  <script src="/assets/themes/foundation/hl/highlight.pack.js"></script>
+  <script src="/assets/themes/foundation/javascripts/app.js"></script>
+</head>
+
+</head>
+<body>
+
+  <!-- Nav Bar -->
+  <div class="row">
+    <div class="twelve columns">
+      <nav class="top-bar">
+      <ul>
+        <!-- Title Area -->
+        <li class="name">
+        <h1>
+          <a href="/">
+            说者无意
+          </a>
+        </h1>
+        </li>
+      </ul>
+      <section>
+      <!-- Left Nav Section -->
+      <ul class="left">
+        <li class="divider"></li>
+        
+        
+        
+
+
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/archive.html">存档</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/categories.html">分类</a></li>
+      	
+      
+    
+  
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/tags.html">标签</a></li>
+      	
+      
+    
+  
+
+
+
+
+        <li class="divider hide-for-small"></li>
+      </ul>
+      </section>
+      </nav>
+    </div>
+  </div>
+  <!-- End Nav -->
+  <!-- Main Page Content and Sidebar -->
+  <div class="row">
+    <!-- Main Blog Content -->
+    <div class="nine columns content" role="content">
+      
+<h1>Tokyo Tyrant 与 Redis 的一些简单比较</h1>
+<article>
+之前简单的看了一下 <a href="http://fallabs.com/tokyotyrant/" target="_blank">Tokyo Tyrant</a>(包括 <a href="http://fallabs.com/tokyocabinet/" target="_blank">Tokyo Cabint</a>) 在 hash 存储上的一些实现，最近 <a href="http://redis.io" target="_blank">Redis</a> 又比较火热，因此，自己也尝试性的去了解了一下 Redis，并且结合 Tokyo Tyrant（以下简称 tt server），说说自己对这两种产品的看法。
+
+<h3>服务端处理模型</h3>
+在 tt server 中，是以多线程的方式向客户端提供服务的：一个主线程负责 accept 客户端的socket，一定数目的线程（可以指定）进行读写服务，同时，也有一定数目的timer线程，专门用来负责定时的任务，比如一些定时的 <a href="http://www.lua.org/" target="_blank">Lua</a> 脚本，同时，如果是slaver，则会有专门一个timer线程，定时负责 do slave 的工作。
+而在 Redis 中，采用的则是单线程的模型来处理所有的客户端请求。
+
+应该说这两种模型，都有各自的优点和缺点。多线程可以利用多核CPU的计算能力，但因此也会增加CAS自旋或者是锁的一些消耗，同时，如果线程过多，那么线程之间上下文的切换，也是一种消耗。
+
+而如果是单线程，则可以完全避免锁的消耗，同时，上下文切换消耗也不需要过多的考虑（但仍需要考虑系统上还有其他的进程），这会让单个CPU的利用率比较高。
+但是，单线程服务，就意味着不能利用多核。同时，服务端对客户端过来的请求是串行执行和响应的，这也在一定程度上，会影响服务端的并发能力，特别是在有些请求执行比较耗时的情况下。想象一下，就这么一个线程，可能正在拼命的执行客户端A的一个请求，而此时客户端B，C，D的请求，还仍在等着线程执行完成之后再去搭理他们。
+
+因此，像 redis 这种单线程的服务模型，如果对一些请求的处理相对较耗时，那其 TPS 也就相应的不能提高上去，也就是说其吞吐量会提不上去；但反过来想， redis 如果能控制每次请求在执行过程是简短并且快速的，那么也许使用单线程，反而会比多线程有更好的性能，毕竟单线程少了上下文切换，以及锁或者 cas 的开销。
+
+而 tt server 则中规中矩：一个线程负责 accept ，一定数目的线程则进行请求的处理。因此，我们在设置 tt server 的时候，也应尽量考虑好工作线程的数目，尽量让CPU数目与工作线程数目一致或者略少。原则是最好的发挥多核CPU的作用，同时又不让工作线程之间去竞争CPU。当然，这是需要不停的去实验的。
+
+所以，在使用 redis 的时候，应尽量不要去使用一些相对耗时的请求；同时，我想 redis 的作者，也应该会尽量优化每种请求的执行速度（至少是一些常用的请求）。
+
+而在使用 tt server 的时候，需要仔细调整使用的工作线程数目，让每个CPU都物尽其用。
+
+<h3>数据存储方式、持久化比较</h3>
+tt server 的 hash 数据库，是使用文件的方式，然后利用 <a href="http://kernel.org/doc/man-pages/online/pages/man2/munmap.2.html" target="_blank">mmap</a> 系统调用映射到内存中。
+这样，就可以利用操作系统的机制，不定期地将数据 flush 到磁盘中。同时，tt server 也提供了 sync 命令，可以让客户端手动将数据 flush 到磁盘中(使用 msync 系统调用)。最后，在关闭 tt server 进程的时候，应该使用 kill -15(TERM信号)，或者使用 ttserver 自带的命令：ttserver -kl pid 进行关闭。这样 ttserver 会先把数据 flush 到磁盘上，再退出进程。
+
+同时， tt server 也提供了 ulog 的方式，对数据库的变更操作进行记录，同样，<a href="http://fallabs.com/tokyotyrant/spex.html#tutorial" target="_blank">可以利用 ulog 对 ttserver 进行恢复</a>，但 ulog 的主要目的，按照我的理解，应是用来实现 replication 的。
+
+而 redis 则是将数据直接写在了内存中，然后利用 <a href="http://redis.io/topics/persistence" target="_blank">redis 的持久化机制</a>，将数据写到磁盘中。
+
+redis 提供了两种持久化机制，分别是 RDB （redis DB） 和 AOF （appending only file）。
+RDB的过程是：redis 进程 fork 一个子进程，然后子进程对内存中的数据写到一个临时文件，这个时候，两个进程就利用了操作系统的 copy on write 机制，共享一份内存数据，只有当父进程（也就是 redis 进程）对原有的数据进行修改或者删除之后，操作系统才为 redis 进程重新开辟新的内存空间（以页为单位）。Redis 本身也提供了 bgsave（background save） 命令支持手动将数据持久化（ save 命令是同步的，而 redis 只有一个线程在服务，结果就是影响 redis 的性能，特别是在大数据量的情况下）。
+
+AOF的过程是：在执行每次命令之后，或者每隔1秒钟之后，Redis会有一个线程将命令以 redis 协议的格式 append 到文件中，这也就是AOF名字的由来，这些命令当然是非只读的，只读不更改数据库，没有必要记录下来。
+这里会有两个问题：
+1、每次命令之后写文件，还是隔1秒之后写文件，影响会有哪些？
+2、这些文件总会不断的膨胀，如何对文件进行压缩呢？
+
+对于第一个问题，也是一个权衡的问题，如果每次命令之后都进行一次写磁盘操作，那么IO的程度可想而知，肯定会影响服务器性能(使用 write 系统调用，会因为文件系统而进入 page buffer，并非立刻写磁盘，而调用 fsync ，则会将 page buffer 中的数据写入磁盘，进行 IO 操作)。而如果每隔1秒进行一次 fsync，那么在这一秒和上一秒之间，如果服务器突然断电，那很有可能这些数据就会丢失。对于这个问题，redis 默认给出的方案是每隔1秒进行一次write。对于1秒的给定，我想，也是基于性能和数据安全的权衡，在性能和数据安全方面都可以让人接受。
+
+对于第二个问题，redis 提供了 rewrite 的机制：当 aof 过大的时候，redis可以自动的进行 rewrite （从 redis 2.4 开始）。rewrite 的过程也是 fork 一个子进程；然后打开一个临时文件，将内存中的数据写入到文件中；在此期间，主进程继续将数据写入老的 aof 文件，同时也会将数据写入到一个内存缓存中；等子进程完成之后，主进程会将缓存中的数据写入到临时文件，再将临时文件进行rename，替换掉原来的文件。这样，就实现了写 aof 过程中的rewrite。
+
+从数据的存储方式来说，尽管 tt server 和 redis 都是在内存上面进行数据的读写，我但认为两个产品对数据存储方式的观点是不一样的。
+tt server 是将磁盘上的文件当作主要的存储方式，然后使用 mmap 将文件映射到内存中。本质上，这是数据应该存储在磁盘中的观点。
+而 redis ，一开始就是将数据直接存储在内存中，在之后的持久化过程中，可以理解成只是将数据的日志写入到磁盘中。本质上，这是把数据应该存储在内存中的观点。
+
+可见，由于作者的观点不一样，也就造成了两种实现方式不一样的产品，这还是比较有意思的。
+从这个层面上来讲，我更加喜欢 redis 作者的思路，很可能作者就是受到 <a href="http://www.infoq.com/cn/news/2008/07/ram-is-disk" target="_blank">内存是新的磁盘，磁盘是新的磁带</a> 的启发。
+
+redis自带实现的VM将在以后不再使用(2.4将是最后一个自带vm功能的版本)，作者认为数据就应该是放在物理内存中的，没有必要要将数据交换到磁盘中，磁盘只是作为日志的一种存储方式。这也是“内存是新的硬盘”思路的体现。
+
+<h3>复制方式比较</h3>
+tt server 和 redis 都支持 master-slave 方式的通信复制。
+tt server 使用了 ulog，并且 slaver 使用了 rts（replication time-stamp） 文件，对上一次的复制时间戳进行保存，实现了复制的续传。
+
+而 redis 则是每次 slave 重新连接到 master 时，master 会将数据进行全量的复制给 slave，而不是增量式的。redis 复制的方式与使用 RDB 持久化方式原理基本相同，也是使用子进程进行内存的dump，在此期间，父进程收集改变数据库的命令，等把子进程收集的数据传输给 slave 之后，再将此期间收集到的数据也传输给 slave。
+
+如果从 slave 数据重建的角度来看，tt server 支持断点复制的实现，应该说是比 redis 先进了一步。
+
+<h3>性能方面比较</h3>
+新浪的 Tim Yang 做了 <a href="http://timyang.net/data/mcdb-tt-redis/" target="_blank">memcacheDB、Redis、tt server 的性能测试</a>。这是比较早期的测试，相信随着版本的升级，两者的性能都会有所提升。不过按照这个测试的结果来看，redis 在数据量不多（500W）并且value 较小的时候，性能表现是很优越的；而对于稍大一些的 value ，tt 则在写方面表现很出色，但写的性能，相对较差。相比之下，redis的读写性能，倒是比较平衡。
+但觉得随着时间的迁移，这个测试的参考性可能会打折扣，如果有可能的话，希望能看到更多的测试结果。
+
+<h3>总结</h3>
+1. 从服务器模型来说，tt server 使用 acceptor + workers 的方式提供服务，能够利用多核的性能，但随着而来的是一些同步、加锁的复杂和开销；而 redis 使用了单线程提供服务，利用不了多核，但如果能够将每次服务的速度控制下来，对单个CPU的利用率，反而可以提高。如果想利用机器的多核性能，也可以在一台机器上搭建多个 redis 实例，但可能更要考虑到机器的内存限制。
+
+2. 从数据存储的方式来说，尽管 tt server 和 redis 都是将数据存储在内存中，但我认为两个产品对“数据是如何存储”的观点是有所不同的。tt server 认为数据是存储在文件中的，只是通过内存映射，将对文件的操作转化成对内存的操作；而 redis 是直接将数据存储到内存中，之后再通过持久化等机制，将数据备份到磁盘中。虽然之前 redis 自己实现了 vm 功能，但redis 后续会取消掉自己实现的 vm 功能，按照“内存是最新的磁盘”这种思路，也就不难理解了：除了增加复杂度之外，还有一个因素，那就是 redis 不需要 vm，能存的数据大小，只能限制在物理内存的范围以内。
+从这个方面来将，redis 后续的版本可能就会限制用户使用的数据库大小是要小于物理内存的，而如果使用 tt server ，则用户须让使用数据文件小于物理内存，否则，发生内存交换，是非常损性能的。
+总而言之，在使用内存数据库的时候，应该有意识的对数据进行容量规划，避免出现物理内存不够而引起的内存交换。
+
+3. tt server 和 redis 的策略都是从 slaver 配置 master ，而不是从 master 配置 slaver 关系，这样就减轻了 master 的负担，同时，master 不必知道自己有多少个 slaver ，就可以横向的扩增 slaver 。但 tt server 支持所谓的断点复制。需要考虑到的是 redis 在做 replication 的时候，是 fork 一个子进程工作的，如果有多个 replicate 的请求，redis 依然还是一个子进程在工作。这样也会对多个 slaver 产生一定的复制延时。
+
+4. redis 在工作方式上，会 fork 子进程，因此 redis 在容量规划上，需要考虑到 redis fork 出子进程所需要的内存和 CPU，在最差的情况下：bgsave时候，父子两个进程虽然可以使用 copy on write 的好处，但如果在此期间整个表记录都被修改了，那就足足需要一倍的内存，否则，此时父进程会进行 copy ，父进程很可能没有内存可用，就需要进行内存交换，由此所带来的性能代价也是非常高的；与此同时，子进程子在 bgsave 的时候，需要对数据进行压缩，压缩是计算密集型的，因此最好不要和父进程使用同一个CPU，因为父进程使用了单线程事件处理的模型，这种模型的优点是充分利用CPU的资源，如果出现子进程与父进程抢CPU，那就得不偿失了。
+
+5. redis 支持较多的数据结构，但在使用 sort 等时间复杂性较多的命令时，也会稍微的降低 redis 的性能，应该对这些耗时的命令进行一定的监控。
+
+</article>
+
+<hr/>
+<dl class="tabs">
+  <dd class="active"><a href="#postMeta">文章信息</a></dd>
+  <dd><a href="#related">相关文章</a></dd>
+  <dd class="hide-for-small"><a href="#otherRead">别人也读过</a></dd>
+</dl>
+<ul class="tabs-content">
+
+  <li class="active" id="postMetaTab">
+    <dl class="sub-nav">
+      
+      <dt>分类:</dt>
+      
+      <dd><a href="/categories.html#nosql-ref">nosql</a></dd>
+      
+      
+    
+      
+      <dt>标签:</dt>
+        
+        <dd><a href="/tags.html#Linux-ref">Linux</a></dd>
+        
+        <dd><a href="/tags.html#nosql-ref">nosql</a></dd>
+        
+        <dd><a href="/tags.html#redis-ref">redis</a></dd>
+        
+        <dd><a href="/tags.html#tokyo tyrant-ref">tokyo tyrant</a></dd>
+        
+        <dd><a href="/tags.html#tt server-ref">tt server</a></dd>
+        
+        
+    </dl>
+  </li>
+
+  <li id="relatedTab">
+  
+    <ul class="circle">
+    
+    <li><a href="/2011/10/22/virtual-memory">内存学习——虚拟内存</a></li>
+    
+    <li><a href="/2011/10/16/why_virtual_memory">内存学习——为什么需要虚拟内存</a></li>
+    
+    <li><a href="/2011/07/30/unix-io-model">关于IO的同步,异步,阻塞,非阻塞</a></li>
+    
+    <li><a href="/2012/05/05/using_terminator">terminator的高效使用</a></li>
+    
+    <li><a href="/2012/07/31/resolved_ubuntu_hosts">解决 ubuntu 的 /etc/hosts 重启就被还原</a></li>
+    
+    <li><a href="/2012/10/12/aqs_1">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(1)</a></li>
+    
+    <li><a href="/2012/10/12/aqs_2">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(2)</a></li>
+    
+    <li><a href="/2012/10/09/terminator_in_ubuntu_bugfix">terminator在ubuntu下有僵尸进程的解决</a></li>
+    
+    </ul>
+  
+  </li>
+
+  <li id="otherReadTab">
+  
+    <ul class="circle">
+    
+    <li><a href="/2012/10/09/terminator_in_ubuntu_bugfix">terminator在ubuntu下有僵尸进程的解决</a></li>
+    
+    <li><a href="/2012/10/12/aqs_1">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(1)</a></li>
+    
+    <li><a href="/2011/07/30/unix-io-model">关于IO的同步,异步,阻塞,非阻塞</a></li>
+    
+    <li><a href="/2012/05/05/using_terminator">terminator的高效使用</a></li>
+    
+    <li><a href="/2011/10/22/virtual-memory">内存学习——虚拟内存</a></li>
+    
+    <li><a href="/2011/10/16/why_virtual_memory">内存学习——为什么需要虚拟内存</a></li>
+    
+    <li><a href="/2012/10/12/aqs_2">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(2)</a></li>
+    
+    <li><a href="/2012/07/31/resolved_ubuntu_hosts">解决 ubuntu 的 /etc/hosts 重启就被还原</a></li>
+    
+    </ul>
+  
+  
+  </li>
+</ul>
+
+<hr/>
+
+
+
+  <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_developer = 1;
+    var disqus_shortname = 'zavakid'; // required: replace example with your forum shortname
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+
+
+
+    </div>
+    <!-- End Main Content -->
+
+    <!-- Sidebar -->
+    <aside class="three columns">
+      <div class="panel">
+        <h5>关于Zava</h5>
+        <p>程序员, 杭州, Linux, Java, Ruby, Bash, 爱折腾，喜欢开源, 踢业余足球, 听点收音机</p>
+        <p>Follow me with:
+          <a href="https://github.com/zavakid">github</a>
+          <br/>more about me:
+          <a href="http://about.me/zavakid"> read more</a>
+        </p>
+      </div>
+    </aside>
+    <!-- End Sidebar -->
+  </div>
+
+  <!-- End Main Content and Sidebar -->
+
+
+  <!-- Footer -->
+
+  <footer class="row">
+    <div class="twelve columns">
+      <hr />
+      <div class="row">
+        <div class="eight columns">
+          <p>Site content © 2012 Zava. Powered by jekyll and jekyllbootstra, customed by Zava</p>
+        </div>
+        <div class="four columns">
+          <ul class="inline-list right">
+            
+            
+            
+
+
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/sitemap.txt">网站地图</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+
+
+
+
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- End Footer -->
+  
+
+</body>
+</html>
+
