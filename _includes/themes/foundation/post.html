@@ -1,1 +1,54 @@
+<article>
 {{ content }}
+</article>
+
+<hr/>
+<dl class="tabs">
+  <dd class="active"><a href="#postMeta">文章信息</a></dd>
+  <dd><a href="#related">相关文章</a></dd>
+  <dd class="hide-for-small"><a href="#otherRead">别人也读过</a></dd>
+</dl>
+<ul class="tabs-content">
+
+  <li class="active" id="postMetaTab">
+    <dl class="sub-nav">
+      {% unless page.categories == empty %}
+      <dt>分类:</dt>
+      {% for category in page.categories %}
+      <dd><a href="{{ BASE_PATH }}{{ site.JB.categories_path }}#{{ category }}-ref">{{ category }}</a></dd>
+      {% endfor %}
+      {% endunless %}
+    
+      {% unless page.tags == empty %}
+      <dt>标签:</dt>
+        {% for tag in page.tags %}
+        <dd><a href="{{ BASE_PATH }}{{ site.JB.tags_path }}#{{ tag }}-ref">{{ tag }}</a></dd>
+        {% endfor %}
+      {% endunless %}  
+    </dl>
+  </li>
+
+  <li id="relatedTab">
+  {% unless site.related_posts == nil %}
+    <ul class="circle">
+    {% for post in site.related_posts %}
+    <li><a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+    </ul>
+  {% endunless %}
+  </li>
+
+  <li id="otherReadTab">
+  {% unless site.other_random_posts == nil %}
+    <ul class="circle">
+    {% for post in site.other_random_posts %}
+    <li><a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+    </ul>
+  {% endunless %}
+  
+  </li>
+</ul>
+
+<hr/>
+{% include JB/comments %}

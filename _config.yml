@@ -5,13 +5,14 @@ permalink: /:year/:month/:day/:title
 exclude: [".rvmrc", ".rbenv-version", "README.md", "Rakefile", "changelog.md", "bak"]
 auto: true
 pygments: true
+lsi: true
 #safe: true
 
 # Themes are encouraged to use these universal variables 
 # so be sure to set them if your theme uses them.
 #
 title : 说者无意
-tagline: 代码如诗 生活如画
+tagline: 代码如诗
 author :
   name : Zava
   #email : zava.kid@gmail.com

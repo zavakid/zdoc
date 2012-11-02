@@ -13,10 +13,15 @@
    Shared Styles
 ----------------------------------------- */
 div.content{
-  line-height : 1.6em;
+  line-height : 1.7em;
 }
 ul {
-  list-style: none;
+  margin-left: 17px;
+  list-style: circle;
+}
+
+ul li ul{
+  list-style: inherit;
 }
 .content h1{
   font-size: 1.6em;
@@ -39,6 +44,11 @@ ul {
 
 .content a.tag{
   margin-top : 0.5em;
+}
+
+pre code{
+  font-weight: normal;
+  margin-bottom: 1.1em;
 }
 
 /* -----------------------------------------
