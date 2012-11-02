@@ -1,0 +1,27 @@
+RewriteEngine on
+  RewriteCond %{REQUEST_URI} ^/203$
+  RewriteRule /(.*) {{site.production_url}}/2012/10/12/aqs_2 [R=301,L]
+
+  RewriteCond %{REQUEST_URI} ^/207$
+  RewriteRule /(.*) {{site.production_url}}/2012/10/12/aqs_1 [R=301,L]
+
+  RewriteCond %{REQUEST_URI} ^/197$
+  RewriteRule /(.*) {{site.production_url}}/2012/10/09/terminator_in_ubuntu_bugfix [R=301,L]
+
+  RewriteCond %{REQUEST_URI} ^/193$
+  RewriteRule /(.*) {{site.production_url}}/2012/07/31/resolved_ubuntu_hosts [R=301,L]
+
+  RewriteCond %{REQUEST_URI} ^/178$
+  RewriteRule /(.*) {{site.production_url}}/2012/05/05/using_terminator [R=301,L]
+
+  RewriteCond %{REQUEST_URI} ^/127$
+  RewriteRule /(.*) {{site.production_url}}/2011/11/17/tokyo-tyrant-vs-redis [R=301,L]
+
+  RewriteCond %{REQUEST_URI} ^/123$
+  RewriteRule /(.*) {{site.production_url}}/2011/10/22/virtual-memory2011/10/22/virtual-memory [R=301,L]
+
+  RewriteCond %{REQUEST_URI} ^/119$
+  RewriteRule /(.*) {{site.production_url}}/2011/10/16/why_virtual_memory [R=301,L]
+
+  RewriteCond %{REQUEST_URI} ^/96$
+  RewriteRule /(.*) {{site.production_url}}/2011/07/30/unix-io-model [R=301,L]
