@@ -1,0 +1,29 @@
+<!-- Nav Bar -->
+<div class="row">
+  <div class="twelve columns">
+    <nav class="top-bar">
+      <ul>
+        <!-- Title Area -->
+        <li class="name">
+        <h2>
+          <a href="{{ HOME_PATH }}">
+            {{ site.title }}
+          </a>
+        </h2>
+        </li>
+      </ul>
+      <section>
+      <!-- Left Nav Section -->
+      <ul class="left">
+        <li class="divider"></li>
+        {% assign pages_list = site.pages %}
+        {% assign group = 'navigation' %}
+        {% include JB/pages_list %}
+        <li class="divider hide-for-small"></li>
+      </ul>
+      </section>
+    </nav>
+  </div>
+</div>
+<!-- End Nav -->
+

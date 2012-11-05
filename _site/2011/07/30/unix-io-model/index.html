@@ -23,13 +23,11 @@
   <script src="/assets/themes/foundation/javascripts/app.js"></script>
 </head>
 
-</head>
 <body>
-
   <!-- Nav Bar -->
-  <div class="row">
-    <div class="twelve columns">
-      <nav class="top-bar">
+<div class="row">
+  <div class="twelve columns">
+    <nav class="top-bar">
       <ul>
         <!-- Title Area -->
         <li class="name">
@@ -97,15 +95,17 @@
         <li class="divider hide-for-small"></li>
       </ul>
       </section>
-      </nav>
-    </div>
+    </nav>
   </div>
-  <!-- End Nav -->
+</div>
+<!-- End Nav -->
+
+
   <!-- Main Page Content and Sidebar -->
   <div class="row">
     <!-- Main Blog Content -->
-    <div class="nine columns content" role="content">
-      
+<div class="eight columns content" role="content">
+  
 <h1>关于IO的同步,异步,阻塞,非阻塞</h1>
 <article>
 上次写了一篇文章：<a title="Unix IO模型学习" href="http://www.zavakid.com/70" target="_blank">Unix IO 模型学习</a>。恰巧在这次周会的时候，<a href="http://weibo.com/fp1203" target="_blank">@fp1203</a> (<a title="黄金档" href="http://www.goldendoc.org/" target="_blank">goldendoc</a>成员之一) 正好在讲解poll和epoll的底层实现。中途正好讨论了网络IO的同步、异步、阻塞、非阻塞的概念，当时讲下来，大家的理解各不相同，各执己见。搜索了网络上的一些文章，观点也各不相同，甚至连<a href="http://en.wikipedia.org/wiki/Asynchronous_I/O" target="_blank">wiki</a>也将异步和非阻塞当成一个概念在解释。
@@ -229,21 +229,21 @@
   
     <ul class="circle">
     
-    <li><a href="/2012/10/12/aqs_1">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(1)</a></li>
+    <li><a href="/2012/10/09/terminator_in_ubuntu_bugfix">terminator在ubuntu下有僵尸进程的解决</a></li>
     
-    <li><a href="/2011/10/22/virtual-memory">内存学习——虚拟内存</a></li>
+    <li><a href="/2012/05/05/using_terminator">terminator的高效使用</a></li>
     
     <li><a href="/2011/11/17/tokyo-tyrant-vs-redis">Tokyo Tyrant 与 Redis 的一些简单比较</a></li>
     
     <li><a href="/2012/07/31/resolved_ubuntu_hosts">解决 ubuntu 的 /etc/hosts 重启就被还原</a></li>
     
-    <li><a href="/2012/05/05/using_terminator">terminator的高效使用</a></li>
-    
-    <li><a href="/2011/10/16/why_virtual_memory">内存学习——为什么需要虚拟内存</a></li>
-    
-    <li><a href="/2012/10/09/terminator_in_ubuntu_bugfix">terminator在ubuntu下有僵尸进程的解决</a></li>
+    <li><a href="/2012/10/12/aqs_1">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(1)</a></li>
     
     <li><a href="/2012/10/12/aqs_2">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(2)</a></li>
+    
+    <li><a href="/2011/10/22/virtual-memory">内存学习——虚拟内存</a></li>
+    
+    <li><a href="/2011/10/16/why_virtual_memory">内存学习——为什么需要虚拟内存</a></li>
     
     </ul>
   
@@ -275,41 +275,38 @@
 
 
 
-    </div>
-    <!-- End Main Content -->
+</div>
+<!-- End Main Content -->
 
-    <!-- Sidebar -->
-    <aside class="three columns">
-      <div class="panel">
-        <h5>关于Zava</h5>
-        <p>程序员, 杭州, Linux, Java, Ruby, Bash, 爱折腾，喜欢开源, 踢业余足球, 听点收音机</p>
-        <p>Follow me with:
-          <a href="https://github.com/zavakid">github</a>
-          <br/>more about me:
-          <a href="http://about.me/zavakid"> read more</a>
-        </p>
-      </div>
-    </aside>
-    <!-- End Sidebar -->
+<!-- Sidebar -->
+<aside class="four columns">
+<div class="panel">
+  <h5>关于Zava</h5>
+  <p>程序员, 杭州, Linux, Java, Ruby, Bash, 爱折腾，喜欢开源, 踢业余足球, 听点收音机</p>
+  <p>Follow me with:
+  <a href="https://github.com/zavakid">github</a>
+  <br>more about me:
+  <a href="http://about.me/zavakid"> read more</a>
+  </p>
+</div>
+</aside>
+<!-- End Sidebar -->
+
   </div>
-
   <!-- End Main Content and Sidebar -->
-
-
   <!-- Footer -->
-
   <footer class="row">
-    <div class="twelve columns">
-      <hr />
-      <div class="row">
-        <div class="eight columns">
-          <p>Site content © 2012 Zava. Powered by jekyll and jekyllbootstra, customed by Zava</p>
-        </div>
-        <div class="four columns">
-          <ul class="inline-list right">
-            
-            
-            
+<div class="twelve columns">
+  <hr />
+  <div class="row">
+    <div class="eight columns">
+      <p>Site content © 2012 Zava. Powered by jekyll and jekyllbootstra, customed by Zava</p>
+    </div>
+    <div class="four columns">
+      <ul class="inline-list right">
+        
+        
+        
 
 
   
@@ -349,14 +346,13 @@
 
 
 
-          </ul>
-        </div>
-      </div>
+      </ul>
     </div>
-  </footer>
+  </div>
+</div>
+</footer>
 
-  <!-- End Footer -->
-  
+
 
 
   <script type="text/javascript">
@@ -374,6 +370,8 @@
 
 
 
+
+  <!-- End Footer -->
 </body>
 </html>
 

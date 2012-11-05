@@ -12,8 +12,19 @@
 /* -----------------------------------------
    Shared Styles
 ----------------------------------------- */
+body{
+  color: #2D2D2D;
+}
+h1, h2, h3, h4, h5, h6{
+  color: #2D2D2D;
+}
 .top-bar > ul .name h2 { line-height: 45px; margin: 0; }
 .top-bar > ul .name h2 a { font-weight: bold; padding: 0 22.5px; font-size: 17px !important; }
+
+div.content div.rate{
+  font-size:0.8em;
+  text-indent : 2em;
+}
 
 div.content{
   line-height : 1.7em;
