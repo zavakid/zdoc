@@ -7,6 +7,7 @@ http://www.zavakid.com/index.html
 http://www.zavakid.com/sitemap.txt
 http://www.zavakid.com/tags.html
 
+http://www.zavakid.com/2012/11/09/liquid
 http://www.zavakid.com/2012/10/12/aqs_2
 http://www.zavakid.com/2012/10/12/aqs_1
 http://www.zavakid.com/2012/10/09/terminator_in_ubuntu_bugfix

@@ -108,22 +108,14 @@
   
 <h1>terminator在ubuntu下有僵尸进程的解决</h1>
 <article>
-之前用一篇文章介绍了一个非常好用的软件：<a href="/2012/05/05/using_terminator">terminator</a>。但在我使用了一段时间之后，发现每当我启动 terminator 的时候，都会有一个僵尸进程存在，于是搜索了一番，最后找到这个  <a href="https://bugs.launchpad.net/terminator/+bug/885606">terminator 的 bug</a>。
+<p>之前用一篇文章介绍了一个非常好用的软件：<a href='/2012/05/05/using_terminator'>terminator</a>。但在我使用了一段时间之后，发现每当我启动 terminator 的时候，都会有一个僵尸进程存在，于是搜索了一番，最后找到这个 <a href='https://bugs.launchpad.net/terminator/+bug/885606'>terminator 的 bug</a>。</p>
 
-
-
-仔细查看一番，原来是路径找不到的path，按照连接中讨论的方案，修复也非常简单。
-
+<p>仔细查看一番，原来是路径找不到的path，按照连接中讨论的方案，修复也非常简单。</p>
 <div>
-  <pre><code class="bash">cd /use/lib
+  <pre><code class='bash'>cd /use/lib
 sudo ln -s libvte9 vte</code></pre>
-</div> 
-
-
-就是这么简单。
-
-
-
+</div>
+<p>就是这么简单。</p>
 </article>
 
 <hr/>
@@ -168,6 +160,8 @@ sudo ln -s libvte9 vte</code></pre>
     
     <li><a href="/2012/10/12/aqs_1">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(1)</a></li>
     
+    <li><a href="/2012/11/09/liquid">Liquid学习</a></li>
+    
     <li><a href="/2012/10/12/aqs_2">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(2)</a></li>
     
     <li><a href="/2011/10/16/why_virtual_memory">内存学习——为什么需要虚拟内存</a></li>
@@ -188,21 +182,23 @@ sudo ln -s libvte9 vte</code></pre>
   
     <ul class="circle">
     
-    <li><a href="/2011/07/30/unix-io-model">关于IO的同步,异步,阻塞,非阻塞</a></li>
+    <li><a href="/2012/10/12/aqs_1">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(1)</a></li>
     
-    <li><a href="/2012/10/12/aqs_2">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(2)</a></li>
-    
-    <li><a href="/2011/11/17/tokyo-tyrant-vs-redis">Tokyo Tyrant 与 Redis 的一些简单比较</a></li>
+    <li><a href="/2012/07/31/resolved_ubuntu_hosts">解决 ubuntu 的 /etc/hosts 重启就被还原</a></li>
     
     <li><a href="/2011/10/16/why_virtual_memory">内存学习——为什么需要虚拟内存</a></li>
     
-    <li><a href="/2012/10/12/aqs_1">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(1)</a></li>
+    <li><a href="/2011/10/22/virtual-memory">内存学习——虚拟内存</a></li>
+    
+    <li><a href="/2011/11/17/tokyo-tyrant-vs-redis">Tokyo Tyrant 与 Redis 的一些简单比较</a></li>
     
     <li><a href="/2012/05/05/using_terminator">terminator的高效使用</a></li>
     
-    <li><a href="/2011/10/22/virtual-memory">内存学习——虚拟内存</a></li>
+    <li><a href="/2011/07/30/unix-io-model">关于IO的同步,异步,阻塞,非阻塞</a></li>
     
-    <li><a href="/2012/07/31/resolved_ubuntu_hosts">解决 ubuntu 的 /etc/hosts 重启就被还原</a></li>
+    <li><a href="/2012/11/09/liquid">Liquid学习</a></li>
+    
+    <li><a href="/2012/10/12/aqs_2">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(2)</a></li>
     
     </ul>
   
