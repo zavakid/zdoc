@@ -1,0 +1,459 @@
+
+<!DOCTYPE html>
+
+<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8" />
+
+  <!-- Set the viewport width to device width for mobile -->
+  <meta name="viewport" content="width=device-width" />
+  <title>Ruby正则表达式学习笔记</title>
+  
+  
+
+  <link rel="alternate" type="application/rss+xml" title="说者无意 &raquo; Feed" href="/atom.xml" />
+  <link rel="stylesheet" href="/assets/themes/foundation/stylesheets/foundation.min.css">
+  <link rel="stylesheet" href="/assets/themes/foundation/stylesheets/app.css">
+  <link rel="stylesheet" href="/assets/themes/foundation/hl/styles/tomorrow-night-bright.css">
+  <script src="/assets/themes/foundation/javascripts/jquery.min.js"></script>
+  <script src="/assets/themes/foundation/javascripts/foundation.min.js"></script>
+  <script src="/assets/themes/foundation/hl/highlight.pack.js"></script>
+  <script src="/assets/themes/foundation/javascripts/app.js"></script>
+</head>
+
+<body>
+  <!-- Nav Bar -->
+<div class="row">
+  <div class="twelve columns">
+    <nav class="top-bar">
+      <ul>
+        <!-- Title Area -->
+        <li class="name">
+        <h2>
+          <a href="/">
+            说者无意
+          </a>
+        </h2>
+        </li>
+      </ul>
+      <section>
+      <!-- Left Nav Section -->
+      <ul class="left">
+        <li class="divider"></li>
+        
+        
+        
+
+
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/archive.html">存档</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/categories.html">分类</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/tags.html">标签</a></li>
+      	
+      
+    
+  
+
+
+
+
+        <li class="divider hide-for-small"></li>
+      </ul>
+      </section>
+    </nav>
+  </div>
+</div>
+<!-- End Nav -->
+
+
+  <!-- Main Page Content and Sidebar -->
+  <div class="row">
+    <!-- Main Blog Content -->
+<div class="eight columns content" role="content">
+  
+<h1>Ruby正则表达式学习笔记</h1>
+<article>
+<p>参考：<a href='http://www.ruby-doc.org/core-1.9.3/Regexp.html'>Ruby Regex</a></p>
+
+<p>ruby中用 Regexp 这个类表示正则，使用 /&#8230;/ 或者 %r 包围起来，或者使用 Regexp::new ，都会新建一个 Regexp 类。</p>
+
+<h3 id='id548'>字符集合</h3>
+
+<p>使用 <code>[a-z]</code> 的形式，还可以 <code>[0-9a-z]</code> 表示 0-9 或者 a-z ， <code>[^0-9]</code> 表示非0-9 <br /> 可以嵌套，比如 <code>[0-9[a-z]]</code>，其实等价于 <code>[0-9a-z]</code><br /> 可以<code>&amp;&amp;</code>操作，比如 <code>[0-9&amp;&amp;[^1-5]]</code>，其实等价于 <code>[06-9]</code><br /></p>
+
+<p>除了显示使用 <code>[ ]</code> 去指定字符集合，还可以使用一些元字符代表一些字符集合.比如：</p>
+
+<ul>
+<li><code>/./</code> 表示除了换行的任意字符（可以确认下ruby是否会兼容不同平台的换行）</li>
+
+<li><code>/./m</code> 表示任意字符（m表示多行模式，multiline）</li>
+
+<li><code>/\w/</code> 表示单词(word)，等价于 <code>[a-zA-Z0-9_]</code></li>
+
+<li><code>/\W/</code> 表示非单词，等价于 <code>[^a-zA-Z0-9_]</code></li>
+
+<li><code>/\d/</code> 表示数字，等价于 <code>[0-9]</code></li>
+
+<li><code>/\D/</code> 非数字，等价于 <code>[^0-9]</code></li>
+
+<li><code>/\h/</code> 16进制字符，等价于 <code>[0-1a-fA-F]</code></li>
+
+<li><code>/\H/</code> 非16进制字符</li>
+
+<li><code>/\s/</code> 表示空白字符，等价于 <code>[\t\r\n\f]</code></li>
+
+<li><code>/\S/</code> 非空白字符</li>
+</ul>
+
+<p>POSIX也有相应的表示方式，使用 <code>[[:space:]]</code> 的形式。使用上比较复杂，不过，是POSIX的：）</p>
+
+<p>POSIX不支持但ruby支持的：</p>
+
+<ul>
+<li><code>/[[:word]]/</code></li>
+
+<li><code>/[[:ascii]]/</code></li>
+</ul>
+
+<h3 id='id549'>重复</h3>
+
+<ul>
+<li><code>*</code> 0到无限次</li>
+
+<li><code>+</code> 1到无限次</li>
+
+<li><code>?</code> 0到1次</li>
+
+<li><code>{n}</code> n次</li>
+
+<li><code>{n,}</code> n到无限次</li>
+
+<li><code>{,m}</code> 0-m次</li>
+
+<li><code>{n,m}</code> n到m次</li>
+</ul>
+
+<p>重复默认是贪婪的！在重复元符号后使用？来表示非贪婪。</p>
+
+<h3 id='id550'>捕捉</h3>
+
+<p>括号可以用来捕捉，然后用 \1 的形式来引用。 比如：<code>/[csh](..) [csh]\1 in/.match(&quot;The cat sat in the hat&quot;)</code></p>
+
+<p>可以使用组名来引用捕捉，而不是 <code>\1 </code> 这样难读的数字， 使用 <code>(?&#39;name&#39;)</code> 或者 <code>(?&lt;name&gt;)</code> 的形式。 比如： <code>pry(main)&gt; /\$(?&lt;dollars&gt;\d+)\.(?&lt;cents&gt;\d+)/.match(&quot;$3.67&quot;)[:dollars] #=&gt; &quot;3&quot;</code></p>
+
+<p>如果是在正则中，则使用 <code>\k&lt;name&gt;</code> 去反向引用，还是第一个例子： <code>/[csh](?&lt;cat&gt;..) [csh]\k&lt;cat&gt; in/.match(&quot;The cat sat in the hat&quot;)</code></p>
+
+<p>注意：不能在一个正则中同时使用名字和数字去反向引用</p>
+
+<h3 id='id551'>分组</h3>
+
+<p>括号还可以表示分组，也就是在一个括号中的就是一个单元。 比如 ： <code>(abc)+ </code></p>
+
+<h3 id='id552'>分组但不捕捉</h3>
+
+<p>使用 <code>(?:…)</code></p>
+
+<h3 id='id553'>原子分组</h3>
+
+<p>使用 <code>(?&gt;pat)</code> 一般原子分组都不会进行回溯，可以增加性能，但会遇到匹配不上的问题。 因为原子分子一旦匹配上了，就不会留下回溯的位置。 详见：<a href='http://www.regular-expressions.info/atomic.html'>Ruby Regex Atomic</a></p>
+
+<h3 id='id554'>子表达式调用</h3>
+
+<p>就是在同一个正则中可以调用刚刚已经写过的子表达式，<br /> 比如 ： <code>/\A(?&lt;paren&gt;\(\g&lt;paren&gt;*\))*\z/ =~ &#39;()&#39;</code><br /> 其中 <code>\A </code> 和 <code>\z </code> 是表示匹配字符串头和字符串尾的意思。<br /> 如果拆解出来，可以还原这个正则的书写顺序：</p>
+
+<ul>
+<li>为了简单，不使用 <code>\A </code> 和 <code>\z </code> 了 * 一开始就是为了匹配 “()” ，所以写成了 ： <code>/\(\)/</code></li>
+
+<li>然后命令这个分组： <code>/(?&lt;paren&gt;\(\))/</code> * 为了匹配 ((())) 这样的字符，就需要在 （ 和 ） 中间递归调用自己，</li>
+
+<li>所以就写成 <code>/(?&lt;paren&gt;\(\g&lt;paren&gt;*\))/</code></li>
+</ul>
+
+<p>类似一种递归.</p>
+
+<p>可以想象正则引擎在匹配的时候，在匹配完了了 ( 之后，就递归调用了自己。</p>
+
+<h3 id='id555'>锚点</h3>
+
+<p>参考 <a href='http://www.ruby-doc.org/core-1.9.3/Regexp.html#Anchors'>Ruby Regex Anchors</a> 一节。</p>
+
+<p>注意点：</p>
+
+<ul>
+<li><code>^</code> <code>\A </code> 的区别 : 一样的, 需要验证</li>
+
+<li><code>$</code> <code>\z </code> <code>\Z </code> 的区别: <code>\Z </code> 与 <code>$</code> 一样，而 <code>\z </code> 会把换行符当作字符,需要验证</li>
+</ul>
+
+<p>lookahead 和 lookbefore 非常有用：</p>
+
+<ul>
+<li><code>(?=pat)</code> 前面是 pat</li>
+
+<li><code>(?!pat)</code> 前面不是 pat</li>
+
+<li><code>(?&lt;=pat)</code> 后面是 pat</li>
+
+<li><code>(?&lt;!pat)</code> 后面不是 pat</li>
+</ul>
+
+<h3 id='id556'>选项</h3>
+
+<ul>
+<li><code>/pat/i</code> 忽略大小写</li>
+
+<li><code>/pat/m</code> 多行模式，把换行当作一个字符</li>
+
+<li><code>/pat/x</code> 忽略空格和注释，常常使用这个方法来提高可读性</li>
+
+<li><code>/pat/o</code> 只执行 #{} 一遍</li>
+</ul>
+</article>
+
+<hr/>
+<dl class="tabs">
+  <dd class="active"><a href="#postMeta">文章信息</a></dd>
+  <dd><a href="#related">相关文章</a></dd>
+  <dd class="hide-for-small"><a href="#otherRead">别人也读过</a></dd>
+</dl>
+<ul class="tabs-content">
+
+  <li class="active" id="postMetaTab">
+    <dl class="sub-nav">
+      
+      <dt>分类:</dt>
+      
+      <dd><a href="/categories.html#ruby-ref">ruby</a></dd>
+      
+      
+    
+      
+      <dt>标签:</dt>
+        
+        <dd><a href="/tags.html#ruby-ref">ruby</a></dd>
+        
+        <dd><a href="/tags.html#template-ref">template</a></dd>
+        
+        
+    </dl>
+  </li>
+
+  <li id="relatedTab">
+  
+    <ul class="circle">
+    
+    <li><a href="/2012/11/29/ruby_regex">Ruby正则表达式学习笔记</a></li>
+    
+    <li><a href="/2012/11/09/liquid">Liquid学习</a></li>
+    
+    <li><a href="/2012/11/20/antlr">antlr学习笔记</a></li>
+    
+    <li><a href="/2012/10/12/aqs_2">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(2)</a></li>
+    
+    <li><a href="/2012/05/05/using_terminator">terminator的高效使用</a></li>
+    
+    <li><a href="/2011/10/16/why_virtual_memory">内存学习——为什么需要虚拟内存</a></li>
+    
+    <li><a href="/2011/10/22/virtual-memory">内存学习——虚拟内存</a></li>
+    
+    <li><a href="/2012/10/12/aqs_1">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(1)</a></li>
+    
+    <li><a href="/2011/07/30/unix-io-model">关于IO的同步,异步,阻塞,非阻塞</a></li>
+    
+    <li><a href="/2012/07/31/resolved_ubuntu_hosts">解决 ubuntu 的 /etc/hosts 重启就被还原</a></li>
+    
+    <li><a href="/2011/11/17/tokyo-tyrant-vs-redis">Tokyo Tyrant 与 Redis 的一些简单比较</a></li>
+    
+    </ul>
+  
+  </li>
+
+  <li id="otherReadTab">
+  
+    <ul class="circle">
+    
+    <li><a href="/2012/10/09/terminator_in_ubuntu_bugfix">terminator在ubuntu下有僵尸进程的解决</a></li>
+    
+    <li><a href="/2011/11/17/tokyo-tyrant-vs-redis">Tokyo Tyrant 与 Redis 的一些简单比较</a></li>
+    
+    <li><a href="/2011/10/22/virtual-memory">内存学习——虚拟内存</a></li>
+    
+    <li><a href="/2012/11/09/liquid">Liquid学习</a></li>
+    
+    <li><a href="/2012/10/12/aqs_1">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(1)</a></li>
+    
+    <li><a href="/2012/05/05/using_terminator">terminator的高效使用</a></li>
+    
+    <li><a href="/2011/07/30/unix-io-model">关于IO的同步,异步,阻塞,非阻塞</a></li>
+    
+    <li><a href="/2012/10/12/aqs_2">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(2)</a></li>
+    
+    <li><a href="/2012/07/31/resolved_ubuntu_hosts">解决 ubuntu 的 /etc/hosts 重启就被还原</a></li>
+    
+    <li><a href="/2011/10/16/why_virtual_memory">内存学习——为什么需要虚拟内存</a></li>
+    
+    </ul>
+  
+  
+  </li>
+</ul>
+
+<hr/>
+
+
+
+  <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_developer = 1;
+    var disqus_shortname = 'zavakid'; // required: replace example with your forum shortname
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+
+
+
+
+</div>
+<!-- End Main Content -->
+
+<!-- Sidebar -->
+<aside class="four columns">
+<div class="panel">
+  <h5>关于Zava</h5>
+  <p>程序员, 杭州, Linux, Java, Ruby, Bash, 爱折腾，喜欢开源, 踢业余足球, 听点收音机</p>
+  <p>Follow me with:
+  <a href="https://github.com/zavakid">github</a>
+  <br>more about me:
+  <a href="http://about.me/zavakid"> read more</a>
+  </p>
+</div>
+</aside>
+<!-- End Sidebar -->
+
+  </div>
+  <!-- End Main Content and Sidebar -->
+  <!-- Footer -->
+  <footer class="row">
+<div class="twelve columns">
+  <hr />
+  <div class="row">
+    <div class="eight columns">
+      <p>Site content © 2012 Zava. Powered by jekyll and jekyllbootstra, customed by Zava</p>
+    </div>
+    <div class="four columns">
+      <ul class="inline-list right">
+        
+        
+        
+
+
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/sitemap.txt">网站地图</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+
+
+
+
+      </ul>
+    </div>
+  </div>
+</div>
+</footer>
+
+
+
+
+  <script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-10645202-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+
+
+
+  <!-- End Footer -->
+</body>
+</html>
+
