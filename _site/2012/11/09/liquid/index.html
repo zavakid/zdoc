@@ -146,11 +146,11 @@ text.split(Liquid::TemplateParser)
 
 <p>render 过程中，最重要的就是 context 这个对象，可以仔细看看，其中我觉得最重要的一点就是scope的范围变得很不重要——如果你需要在context中寻找一个变量，那么此context将在所有的scope中寻找，知道找到为止，如果找不到，也会在所谓的 environment 中去寻找。（个人觉得 context 对于理解 liquid 非常重要，需要仔细琢磨，后续这里再展开)</p>
 
-<h3 id='id544'>一些场景</h3>
+<h3 id='id1'>一些场景</h3>
 
 <p>这里会列举几个我能想象到的场景以及解决方法。</p>
 
-<h4 id='id545'>数组赋值</h4>
+<h4 id='id2'>数组赋值</h4>
 
 <p>可以扩展 tag 或者 block，具体可以看看 liquid 中各种 tag 的写法。这里我扩展一下 capture, liquid 中 capture 是赋值的tag，相当于是 a = b 的形式，现在我扩展成一个 block, 并且把 block 里面的东西加入到一个数组中，以便在之后某个时刻模板上运行一个遍历。</p>
 <div>
@@ -181,7 +181,7 @@ text.split(Liquid::TemplateParser)
 end
 Liquid::Template.register_tag('captureArray', Zavakid::CaptureArrayBlock)</code></pre>
 </div>
-<h4 id='id546'>代码高亮</h4>
+<h4 id='id3'>代码高亮</h4>
 
 <p>其实就是我正在用的这种高亮，其实扩展起来也相对容易，需要解决的一个问题就是不去parse高亮快中的 liquid tag，参考了 jekyll 的 highlight 和 liquid 的 raw，见代码：</p>
 <div>
@@ -228,7 +228,7 @@ Liquid::Template.register_tag('captureArray', Zavakid::CaptureArrayBlock)</code>
 end
 Liquid::Template.register_tag('hl', Zavakid::HlBlock)</code></pre>
 </div>
-<h3 id='id547'>总结</h3>
+<h3 id='id4'>总结</h3>
 
 <p>liquid 的实现比较轻巧，不是我之前想像的死板的tokenize，而是利用了正则表达式来解决掉token的问题，然后再使用各个tag来递归parse。 这种思路还是很值得学习的。下次可以自己尝试也写一个 liquid 的 java 版本。</p>
 </article>
@@ -265,10 +265,6 @@ Liquid::Template.register_tag('hl', Zavakid::HlBlock)</code></pre>
   
     <ul class="circle">
     
-    <li><a href="/2012/11/09/liquid">Liquid学习</a></li>
-    
-    <li><a href="/2012/11/20/antlr">antlr学习笔记</a></li>
-    
     <li><a href="/2012/10/12/aqs_1">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(1)</a></li>
     
     <li><a href="/2012/11/29/ruby_regex">Ruby正则表达式学习笔记</a></li>
@@ -286,6 +282,8 @@ Liquid::Template.register_tag('hl', Zavakid::HlBlock)</code></pre>
     <li><a href="/2011/10/22/virtual-memory">内存学习——虚拟内存</a></li>
     
     <li><a href="/2011/10/16/why_virtual_memory">内存学习——为什么需要虚拟内存</a></li>
+    
+    <li><a href="/2012/10/12/aqs_2">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(2)</a></li>
     
     </ul>
   
@@ -295,25 +293,25 @@ Liquid::Template.register_tag('hl', Zavakid::HlBlock)</code></pre>
   
     <ul class="circle">
     
-    <li><a href="/2011/11/17/tokyo-tyrant-vs-redis">Tokyo Tyrant 与 Redis 的一些简单比较</a></li>
+    <li><a href="/2012/10/12/aqs_2">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(2)</a></li>
+    
+    <li><a href="/2012/05/05/using_terminator">terminator的高效使用</a></li>
     
     <li><a href="/2011/10/16/why_virtual_memory">内存学习——为什么需要虚拟内存</a></li>
+    
+    <li><a href="/2012/11/29/ruby_regex">Ruby正则表达式学习笔记</a></li>
+    
+    <li><a href="/2012/10/12/aqs_1">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(1)</a></li>
+    
+    <li><a href="/2012/10/09/terminator_in_ubuntu_bugfix">terminator在ubuntu下有僵尸进程的解决</a></li>
+    
+    <li><a href="/2011/11/17/tokyo-tyrant-vs-redis">Tokyo Tyrant 与 Redis 的一些简单比较</a></li>
     
     <li><a href="/2011/07/30/unix-io-model">关于IO的同步,异步,阻塞,非阻塞</a></li>
     
     <li><a href="/2011/10/22/virtual-memory">内存学习——虚拟内存</a></li>
     
-    <li><a href="/2012/05/05/using_terminator">terminator的高效使用</a></li>
-    
-    <li><a href="/2012/10/12/aqs_2">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(2)</a></li>
-    
-    <li><a href="/2012/10/12/aqs_1">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(1)</a></li>
-    
     <li><a href="/2012/07/31/resolved_ubuntu_hosts">解决 ubuntu 的 /etc/hosts 重启就被还原</a></li>
-    
-    <li><a href="/2012/11/29/ruby_regex">Ruby正则表达式学习笔记</a></li>
-    
-    <li><a href="/2012/10/09/terminator_in_ubuntu_bugfix">terminator在ubuntu下有僵尸进程的解决</a></li>
     
     </ul>
   
@@ -370,7 +368,8 @@ Liquid::Template.register_tag('hl', Zavakid::HlBlock)</code></pre>
   <hr />
   <div class="row">
     <div class="eight columns">
-      <p>Site content © 2012 Zava. Powered by jekyll and jekyllbootstra, customed by Zava</p>
+      <p>Site content © 2012 Zava. Powered by jekyll and jekyllbootstra, customed by Zava <br/>
+      host on <a href="http://sae.sina.com.cn" target="_blank"><img src="http://static.sae.sina.com.cn/image/poweredby/120X33_transparent.gif" title="Powered by Sina App Engine"></a></p>
     </div>
     <div class="four columns">
       <ul class="inline-list right">

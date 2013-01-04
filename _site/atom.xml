@@ -4,7 +4,7 @@
  <title>说者无意</title>
  <link href="http://www.zavakid.com/atom.xml" rel="self"/>
  <link href="http://www.zavakid.com"/>
- <updated>2012-11-29T19:52:58+08:00</updated>
+ <updated>2013-01-04T20:53:05+08:00</updated>
  <id>http://www.zavakid.com</id>
  <author>
    <name>Zava</name>
@@ -19,9 +19,9 @@
    <id>http://www.zavakid.com/2012/11/29/ruby_regex</id>
    <content type="html">&lt;p&gt;参考：&lt;a href='http://www.ruby-doc.org/core-1.9.3/Regexp.html'&gt;Ruby Regex&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;ruby中用 Regexp 这个类表示正则，使用 /&amp;#8230;/ 或者 %r 包围起来，或者使用 Regexp::new ，都会新建一个 Regexp 类。&lt;/p&gt;
+&lt;p&gt;ruby中用 Regexp 这个类表示正则，使用 &lt;code&gt;/.../&lt;/code&gt; 或者 &lt;code&gt;%r{...}&lt;/code&gt; 包围起来，或者使用 Regexp::new ，都会新建一个 Regexp 类。&lt;/p&gt;
 
-&lt;h3 id='id548'&gt;字符集合&lt;/h3&gt;
+&lt;h3 id='id5'&gt;字符集合&lt;/h3&gt;
 
 &lt;p&gt;使用 &lt;code&gt;[a-z]&lt;/code&gt; 的形式，还可以 &lt;code&gt;[0-9a-z]&lt;/code&gt; 表示 0-9 或者 a-z ， &lt;code&gt;[^0-9]&lt;/code&gt; 表示非0-9 &lt;br /&gt; 可以嵌套，比如 &lt;code&gt;[0-9[a-z]]&lt;/code&gt;，其实等价于 &lt;code&gt;[0-9a-z]&lt;/code&gt;&lt;br /&gt; 可以&lt;code&gt;&amp;amp;&amp;amp;&lt;/code&gt;操作，比如 &lt;code&gt;[0-9&amp;amp;&amp;amp;[^1-5]]&lt;/code&gt;，其实等价于 &lt;code&gt;[06-9]&lt;/code&gt;&lt;br /&gt;&lt;/p&gt;
 
@@ -59,7 +59,7 @@
 &lt;li&gt;&lt;code&gt;/[[:ascii]]/&lt;/code&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h3 id='id549'&gt;重复&lt;/h3&gt;
+&lt;h3 id='id6'&gt;重复&lt;/h3&gt;
 
 &lt;ul&gt;
 &lt;li&gt;&lt;code&gt;*&lt;/code&gt; 0到无限次&lt;/li&gt;
@@ -79,7 +79,7 @@
 
 &lt;p&gt;重复默认是贪婪的！在重复元符号后使用？来表示非贪婪。&lt;/p&gt;
 
-&lt;h3 id='id550'&gt;捕捉&lt;/h3&gt;
+&lt;h3 id='id7'&gt;捕捉&lt;/h3&gt;
 
 &lt;p&gt;括号可以用来捕捉，然后用 \1 的形式来引用。 比如：&lt;code&gt;/[csh](..) [csh]\1 in/.match(&amp;quot;The cat sat in the hat&amp;quot;)&lt;/code&gt;&lt;/p&gt;
 
@@ -89,19 +89,19 @@
 
 &lt;p&gt;注意：不能在一个正则中同时使用名字和数字去反向引用&lt;/p&gt;
 
-&lt;h3 id='id551'&gt;分组&lt;/h3&gt;
+&lt;h3 id='id8'&gt;分组&lt;/h3&gt;
 
 &lt;p&gt;括号还可以表示分组，也就是在一个括号中的就是一个单元。 比如 ： &lt;code&gt;(abc)+ &lt;/code&gt;&lt;/p&gt;
 
-&lt;h3 id='id552'&gt;分组但不捕捉&lt;/h3&gt;
+&lt;h3 id='id9'&gt;分组但不捕捉&lt;/h3&gt;
 
 &lt;p&gt;使用 &lt;code&gt;(?:…)&lt;/code&gt;&lt;/p&gt;
 
-&lt;h3 id='id553'&gt;原子分组&lt;/h3&gt;
+&lt;h3 id='id10'&gt;原子分组&lt;/h3&gt;
 
 &lt;p&gt;使用 &lt;code&gt;(?&amp;gt;pat)&lt;/code&gt; 一般原子分组都不会进行回溯，可以增加性能，但会遇到匹配不上的问题。 因为原子分子一旦匹配上了，就不会留下回溯的位置。 详见：&lt;a href='http://www.regular-expressions.info/atomic.html'&gt;Ruby Regex Atomic&lt;/a&gt;&lt;/p&gt;
 
-&lt;h3 id='id554'&gt;子表达式调用&lt;/h3&gt;
+&lt;h3 id='id11'&gt;子表达式调用&lt;/h3&gt;
 
 &lt;p&gt;就是在同一个正则中可以调用刚刚已经写过的子表达式，&lt;br /&gt; 比如 ： &lt;code&gt;/\A(?&amp;lt;paren&amp;gt;\(\g&amp;lt;paren&amp;gt;*\))*\z/ =~ &amp;#39;()&amp;#39;&lt;/code&gt;&lt;br /&gt; 其中 &lt;code&gt;\A &lt;/code&gt; 和 &lt;code&gt;\z &lt;/code&gt; 是表示匹配字符串头和字符串尾的意思。&lt;br /&gt; 如果拆解出来，可以还原这个正则的书写顺序：&lt;/p&gt;
 
@@ -117,7 +117,7 @@
 
 &lt;p&gt;可以想象正则引擎在匹配的时候，在匹配完了了 ( 之后，就递归调用了自己。&lt;/p&gt;
 
-&lt;h3 id='id555'&gt;锚点&lt;/h3&gt;
+&lt;h3 id='id12'&gt;锚点&lt;/h3&gt;
 
 &lt;p&gt;参考 &lt;a href='http://www.ruby-doc.org/core-1.9.3/Regexp.html#Anchors'&gt;Ruby Regex Anchors&lt;/a&gt; 一节。&lt;/p&gt;
 
@@ -141,7 +141,7 @@
 &lt;li&gt;&lt;code&gt;(?&amp;lt;!pat)&lt;/code&gt; 后面不是 pat&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h3 id='id556'&gt;选项&lt;/h3&gt;
+&lt;h3 id='id13'&gt;选项&lt;/h3&gt;
 
 &lt;ul&gt;
 &lt;li&gt;&lt;code&gt;/pat/i&lt;/code&gt; 忽略大小写&lt;/li&gt;
@@ -197,11 +197,11 @@ text.split(Liquid::TemplateParser)
 
 &lt;p&gt;render 过程中，最重要的就是 context 这个对象，可以仔细看看，其中我觉得最重要的一点就是scope的范围变得很不重要——如果你需要在context中寻找一个变量，那么此context将在所有的scope中寻找，知道找到为止，如果找不到，也会在所谓的 environment 中去寻找。（个人觉得 context 对于理解 liquid 非常重要，需要仔细琢磨，后续这里再展开)&lt;/p&gt;
 
-&lt;h3 id='id544'&gt;一些场景&lt;/h3&gt;
+&lt;h3 id='id1'&gt;一些场景&lt;/h3&gt;
 
 &lt;p&gt;这里会列举几个我能想象到的场景以及解决方法。&lt;/p&gt;
 
-&lt;h4 id='id545'&gt;数组赋值&lt;/h4&gt;
+&lt;h4 id='id2'&gt;数组赋值&lt;/h4&gt;
 
 &lt;p&gt;可以扩展 tag 或者 block，具体可以看看 liquid 中各种 tag 的写法。这里我扩展一下 capture, liquid 中 capture 是赋值的tag，相当于是 a = b 的形式，现在我扩展成一个 block, 并且把 block 里面的东西加入到一个数组中，以便在之后某个时刻模板上运行一个遍历。&lt;/p&gt;
 &lt;div&gt;
@@ -232,7 +232,7 @@ text.split(Liquid::TemplateParser)
 end
 Liquid::Template.register_tag('captureArray', Zavakid::CaptureArrayBlock)&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
-&lt;h4 id='id546'&gt;代码高亮&lt;/h4&gt;
+&lt;h4 id='id3'&gt;代码高亮&lt;/h4&gt;
 
 &lt;p&gt;其实就是我正在用的这种高亮，其实扩展起来也相对容易，需要解决的一个问题就是不去parse高亮快中的 liquid tag，参考了 jekyll 的 highlight 和 liquid 的 raw，见代码：&lt;/p&gt;
 &lt;div&gt;
@@ -279,7 +279,7 @@ Liquid::Template.register_tag('captureArray', Zavakid::CaptureArrayBlock)&lt;/co
 end
 Liquid::Template.register_tag('hl', Zavakid::HlBlock)&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
-&lt;h3 id='id547'&gt;总结&lt;/h3&gt;
+&lt;h3 id='id4'&gt;总结&lt;/h3&gt;
 
 &lt;p&gt;liquid 的实现比较轻巧，不是我之前想像的死板的tokenize，而是利用了正则表达式来解决掉token的问题，然后再使用各个tag来递归parse。 这种思路还是很值得学习的。下次可以自己尝试也写一个 liquid 的 java 版本。&lt;/p&gt;</content>
  </entry>

@@ -11,7 +11,7 @@ tags:
 
 参考：[Ruby Regex](http://www.ruby-doc.org/core-1.9.3/Regexp.html)
 
-ruby中用 Regexp 这个类表示正则，使用 /.../ 或者 %r{...} 包围起来，或者使用 Regexp::new ，都会新建一个 Regexp 类。
+ruby中用 Regexp 这个类表示正则，使用 `/.../` 或者 `%r{...}` 包围起来，或者使用 Regexp::new ，都会新建一个 Regexp 类。
 
 ###字符集合
 

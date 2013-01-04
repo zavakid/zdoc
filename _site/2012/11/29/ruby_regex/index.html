@@ -110,9 +110,9 @@
 <article>
 <p>参考：<a href='http://www.ruby-doc.org/core-1.9.3/Regexp.html'>Ruby Regex</a></p>
 
-<p>ruby中用 Regexp 这个类表示正则，使用 /&#8230;/ 或者 %r 包围起来，或者使用 Regexp::new ，都会新建一个 Regexp 类。</p>
+<p>ruby中用 Regexp 这个类表示正则，使用 <code>/.../</code> 或者 <code>%r{...}</code> 包围起来，或者使用 Regexp::new ，都会新建一个 Regexp 类。</p>
 
-<h3 id='id548'>字符集合</h3>
+<h3 id='id5'>字符集合</h3>
 
 <p>使用 <code>[a-z]</code> 的形式，还可以 <code>[0-9a-z]</code> 表示 0-9 或者 a-z ， <code>[^0-9]</code> 表示非0-9 <br /> 可以嵌套，比如 <code>[0-9[a-z]]</code>，其实等价于 <code>[0-9a-z]</code><br /> 可以<code>&amp;&amp;</code>操作，比如 <code>[0-9&amp;&amp;[^1-5]]</code>，其实等价于 <code>[06-9]</code><br /></p>
 
@@ -150,7 +150,7 @@
 <li><code>/[[:ascii]]/</code></li>
 </ul>
 
-<h3 id='id549'>重复</h3>
+<h3 id='id6'>重复</h3>
 
 <ul>
 <li><code>*</code> 0到无限次</li>
@@ -170,7 +170,7 @@
 
 <p>重复默认是贪婪的！在重复元符号后使用？来表示非贪婪。</p>
 
-<h3 id='id550'>捕捉</h3>
+<h3 id='id7'>捕捉</h3>
 
 <p>括号可以用来捕捉，然后用 \1 的形式来引用。 比如：<code>/[csh](..) [csh]\1 in/.match(&quot;The cat sat in the hat&quot;)</code></p>
 
@@ -180,19 +180,19 @@
 
 <p>注意：不能在一个正则中同时使用名字和数字去反向引用</p>
 
-<h3 id='id551'>分组</h3>
+<h3 id='id8'>分组</h3>
 
 <p>括号还可以表示分组，也就是在一个括号中的就是一个单元。 比如 ： <code>(abc)+ </code></p>
 
-<h3 id='id552'>分组但不捕捉</h3>
+<h3 id='id9'>分组但不捕捉</h3>
 
 <p>使用 <code>(?:…)</code></p>
 
-<h3 id='id553'>原子分组</h3>
+<h3 id='id10'>原子分组</h3>
 
 <p>使用 <code>(?&gt;pat)</code> 一般原子分组都不会进行回溯，可以增加性能，但会遇到匹配不上的问题。 因为原子分子一旦匹配上了，就不会留下回溯的位置。 详见：<a href='http://www.regular-expressions.info/atomic.html'>Ruby Regex Atomic</a></p>
 
-<h3 id='id554'>子表达式调用</h3>
+<h3 id='id11'>子表达式调用</h3>
 
 <p>就是在同一个正则中可以调用刚刚已经写过的子表达式，<br /> 比如 ： <code>/\A(?&lt;paren&gt;\(\g&lt;paren&gt;*\))*\z/ =~ &#39;()&#39;</code><br /> 其中 <code>\A </code> 和 <code>\z </code> 是表示匹配字符串头和字符串尾的意思。<br /> 如果拆解出来，可以还原这个正则的书写顺序：</p>
 
@@ -208,7 +208,7 @@
 
 <p>可以想象正则引擎在匹配的时候，在匹配完了了 ( 之后，就递归调用了自己。</p>
 
-<h3 id='id555'>锚点</h3>
+<h3 id='id12'>锚点</h3>
 
 <p>参考 <a href='http://www.ruby-doc.org/core-1.9.3/Regexp.html#Anchors'>Ruby Regex Anchors</a> 一节。</p>
 
@@ -232,7 +232,7 @@
 <li><code>(?&lt;!pat)</code> 后面不是 pat</li>
 </ul>
 
-<h3 id='id556'>选项</h3>
+<h3 id='id13'>选项</h3>
 
 <ul>
 <li><code>/pat/i</code> 忽略大小写</li>
@@ -277,11 +277,7 @@
   
     <ul class="circle">
     
-    <li><a href="/2012/11/29/ruby_regex">Ruby正则表达式学习笔记</a></li>
-    
     <li><a href="/2012/11/09/liquid">Liquid学习</a></li>
-    
-    <li><a href="/2012/11/20/antlr">antlr学习笔记</a></li>
     
     <li><a href="/2012/10/12/aqs_2">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(2)</a></li>
     
@@ -291,13 +287,15 @@
     
     <li><a href="/2011/10/22/virtual-memory">内存学习——虚拟内存</a></li>
     
-    <li><a href="/2012/10/12/aqs_1">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(1)</a></li>
-    
     <li><a href="/2011/07/30/unix-io-model">关于IO的同步,异步,阻塞,非阻塞</a></li>
     
     <li><a href="/2012/07/31/resolved_ubuntu_hosts">解决 ubuntu 的 /etc/hosts 重启就被还原</a></li>
     
     <li><a href="/2011/11/17/tokyo-tyrant-vs-redis">Tokyo Tyrant 与 Redis 的一些简单比较</a></li>
+    
+    <li><a href="/2012/10/12/aqs_1">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(1)</a></li>
+    
+    <li><a href="/2012/10/09/terminator_in_ubuntu_bugfix">terminator在ubuntu下有僵尸进程的解决</a></li>
     
     </ul>
   
@@ -307,23 +305,23 @@
   
     <ul class="circle">
     
-    <li><a href="/2012/10/09/terminator_in_ubuntu_bugfix">terminator在ubuntu下有僵尸进程的解决</a></li>
-    
-    <li><a href="/2011/11/17/tokyo-tyrant-vs-redis">Tokyo Tyrant 与 Redis 的一些简单比较</a></li>
-    
-    <li><a href="/2011/10/22/virtual-memory">内存学习——虚拟内存</a></li>
-    
     <li><a href="/2012/11/09/liquid">Liquid学习</a></li>
-    
-    <li><a href="/2012/10/12/aqs_1">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(1)</a></li>
     
     <li><a href="/2012/05/05/using_terminator">terminator的高效使用</a></li>
     
+    <li><a href="/2012/07/31/resolved_ubuntu_hosts">解决 ubuntu 的 /etc/hosts 重启就被还原</a></li>
+    
+    <li><a href="/2012/10/12/aqs_1">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(1)</a></li>
+    
+    <li><a href="/2011/10/22/virtual-memory">内存学习——虚拟内存</a></li>
+    
     <li><a href="/2011/07/30/unix-io-model">关于IO的同步,异步,阻塞,非阻塞</a></li>
+    
+    <li><a href="/2011/11/17/tokyo-tyrant-vs-redis">Tokyo Tyrant 与 Redis 的一些简单比较</a></li>
     
     <li><a href="/2012/10/12/aqs_2">Java并发同步器AQS(AbstractQueuedSynchronizer)学习笔记(2)</a></li>
     
-    <li><a href="/2012/07/31/resolved_ubuntu_hosts">解决 ubuntu 的 /etc/hosts 重启就被还原</a></li>
+    <li><a href="/2012/10/09/terminator_in_ubuntu_bugfix">terminator在ubuntu下有僵尸进程的解决</a></li>
     
     <li><a href="/2011/10/16/why_virtual_memory">内存学习——为什么需要虚拟内存</a></li>
     
@@ -382,7 +380,8 @@
   <hr />
   <div class="row">
     <div class="eight columns">
-      <p>Site content © 2012 Zava. Powered by jekyll and jekyllbootstra, customed by Zava</p>
+      <p>Site content © 2012 Zava. Powered by jekyll and jekyllbootstra, customed by Zava <br/>
+      host on <a href="http://sae.sina.com.cn" target="_blank"><img src="http://static.sae.sina.com.cn/image/poweredby/120X33_transparent.gif" title="Powered by Sina App Engine"></a></p>
     </div>
     <div class="four columns">
       <ul class="inline-list right">
