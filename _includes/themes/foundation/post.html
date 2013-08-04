@@ -5,13 +5,13 @@
 
 <hr/>
 <dl class="tabs">
-  <dd class="active"><a href="#postMeta">文章信息</a></dd>
-  <dd><a href="#related">相关文章</a></dd>
+  <dd><a href="#postMeta">文章信息</a></dd>
+  <dd class="active"><a href="#related">相关文章</a></dd>
   <dd class="hide-for-small"><a href="#otherRead">别人也读过</a></dd>
 </dl>
 <ul class="tabs-content">
 
-  <li class="active" id="postMetaTab">
+  <li id="postMetaTab">
     <dl class="sub-nav">
       {% unless page.categories == empty %}
       <dt>分类:</dt>
@@ -29,7 +29,7 @@
     </dl>
   </li>
 
-  <li id="relatedTab">
+  <li class="active" id="relatedTab">
   {% unless site.related_posts == nil %}
     <ul class="circle">
     {% for post in site.related_posts %}

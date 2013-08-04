@@ -4,13 +4,128 @@
  <title>说者无意</title>
  <link href="http://www.zavakid.com/atom.xml" rel="self"/>
  <link href="http://www.zavakid.com"/>
- <updated>2013-01-04T20:53:05+08:00</updated>
+ <updated>2013-01-21T11:40:48+08:00</updated>
  <id>http://www.zavakid.com</id>
  <author>
    <name>Zava</name>
    <email></email>
  </author>
 
+ 
+ <entry>
+   <title>模式学习笔记-体系结构模式-2</title>
+   <link href="http://www.zavakid.com/2013/01/21/pattern_learn"/>
+   <updated>2013-01-21T00:00:00+08:00</updated>
+   <id>http://www.zavakid.com/2013/01/21/pattern_learn</id>
+   <content type="html">&lt;p&gt;体系结构模式定义了软件的基础结构。比如 MVC，比如分布式代理模式。 此类模式并非只能使用一种，可以组合起来使用。这取决于项目所面临的实际情况。 比如你在开发一个项目，需求特点是：1.有用户界面；2.有灵活的异构系统。 这时你可能会选择 MVC 和 基于分布式代理 这样的体系结构组合来定下你的模式基调。&lt;/p&gt;
+
+&lt;h3 id='id17'&gt;一般的体系结构模式有：&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;层 Layer&lt;/li&gt;
+
+&lt;li&gt;管道/过滤器 Pipes and Filters&lt;/li&gt;
+
+&lt;li&gt;黑板 Blackboard&lt;/li&gt;
+
+&lt;li&gt;代理者 Broker&lt;/li&gt;
+
+&lt;li&gt;MVC&lt;/li&gt;
+
+&lt;li&gt;表示-抽象-控制 PAC&lt;/li&gt;
+
+&lt;li&gt;微核 Microkernel&lt;/li&gt;
+
+&lt;li&gt;映像 Reflection&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id='id18'&gt;可以对这些模式进行分类：&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;从混沌到结构（层，管道/过滤器，黑板）&lt;/li&gt;
+&lt;li&gt;分布式系统（代理者）&lt;/li&gt;
+&lt;li&gt;交互性系统（MVC，表示-抽象-控制）&lt;/li&gt;
+&lt;li&gt;适应性系统（微核，映像）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id='id19'&gt;从混沌到结构&lt;/h3&gt;
+
+&lt;p&gt;一开始接受需求的时候，就是一篇混沌的时候，因为这时候系统还没有被设计，也没有被整理。我们需要一个思路将整个系统划分为多个组成部分。&lt;/p&gt;
+
+&lt;p&gt;分层是使用比较多的一种模式，将系统分解成有层次概念的部分。很多我们经常接触的架构，都已经分层了。比如TCP、计算机中的存储体系层次。&lt;/p&gt;
+
+&lt;p&gt;管道/过滤器则侧重数据流之间的定义，尽管层之间也需要数据流。但管道/过滤器则相对灵活，他们可以互相组合，调整顺序。比如，unix的管道模型。&lt;/p&gt;
+
+&lt;p&gt;黑板模式适用于一些为止领域中的系统，（&lt;a href='http://en.wikipedia.org/wiki/Blackboard_system'&gt;参考wiki&lt;/a&gt;）,比如人工智能等领域。有兴趣的读者可以研究下。&lt;/p&gt;
+
+&lt;h3 id='id20'&gt;分布式系统&lt;/h3&gt;
+
+&lt;p&gt;在分布式系统中，应用程序开发人员往往有几个需求：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;简单，进程间的通信和方法调用，应该就像在本地通信和调用一样。&lt;/li&gt;
+&lt;li&gt;透明，不需要知道具体节点的位置/ip，这样就为节点的迁移/切换提供了可能性。&lt;/li&gt;
+&lt;li&gt;安全，不会因为一个节点挂了，就导致我不能访问，应该有相应的节点来继续提供服务。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;代理者模式（broker）是解决者方面问题的模式。 代理者模式主要有几个概念：客户端，客户端代理，服务端，服务端代理，桥接。 请求的流程是： &lt;ol&gt;
+&lt;li&gt;客户端向客户端代理调用方法&lt;/li&gt;
+&lt;li&gt;客户端代理将请求发向服务端代理者&lt;/li&gt;
+&lt;li&gt;服务端代理者向服务器发出方法调用&lt;/li&gt;
+&lt;li&gt;服务器返回结构，服务端代理者返回给客户端代理者，客户端代理者返回客户端。&lt;/li&gt;
+&lt;li&gt;如果此时服务器没有服务，那么服务端代理者可以转发请求，请求其他的服务区代理者。这就是桥接。&lt;/li&gt;
+&lt;/ol&gt;&lt;/p&gt;
+
+&lt;h3 id='id21'&gt;交互式系统&lt;/h3&gt;
+
+&lt;p&gt;这里我注重看了下 MVC 的优缺点，对与PAC，有兴趣的可以查看&lt;a href='http://en.wikipedia.org/wiki/Presentation-abstraction-control'&gt;pac的wiki&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;MVC 的优点： &lt;ol&gt;
+&lt;li&gt;同一模型可以有多个视图&lt;/li&gt;
+&lt;li&gt;通过观察者模式，可以让模型的变更传递到所有关注此模型的视图中。&lt;/li&gt;
+&lt;li&gt;MVC三组件可以任意替换实现&lt;/li&gt;
+&lt;/ol&gt;&lt;/p&gt;
+
+&lt;p&gt;MVC缺点： &lt;ol&gt;
+&lt;li&gt;复杂性增加，相比于简单的逻辑界面揉在一起写，复杂度有所增加&lt;/li&gt;
+&lt;li&gt;模型更新需要更新相应视图，造成更新风暴 (不过在基于web编程中，很少人会这么做，特别用户打开多tab的时候)&lt;/li&gt;
+&lt;li&gt;视图和控制器严重依赖模型，一旦模型结构有所变更，视图和控制器也需要跟着变更&lt;/li&gt;
+&lt;/ol&gt;&lt;/p&gt;
+
+&lt;h3 id='id22'&gt;适应性系统&lt;/h3&gt;
+
+&lt;p&gt;操作系统就是非常典型的微核模式。微核模型非茶适用于需要满足不同平台和个性化定制的需求。 一般微核都提供了可插拔的环境，像Linux的内核，可以任意加载模块。&lt;/p&gt;
+
+&lt;p&gt;而映像模式也是为了解决以上的问题，不同的是其使用了另一种方式，即提供了运行时的元信息。也就是所谓的映像。&lt;/p&gt;
+
+&lt;p&gt;模式这东西，如果不用，没有吃过亏，相信对其好处很难体会得到。 先对这上面的模式有个印象，待到后续有场景时，起码也能想到能有相应的模式去解决。&lt;/p&gt;</content>
+ </entry>
+ 
+ <entry>
+   <title>模式学习笔记之概述-1</title>
+   <link href="http://www.zavakid.com/2013/01/09/pattern_intro"/>
+   <updated>2013-01-09T00:00:00+08:00</updated>
+   <id>http://www.zavakid.com/2013/01/09/pattern_intro</id>
+   <content type="html">&lt;h3 id='id14'&gt;什么是模式&lt;/h3&gt;
+
+&lt;p&gt;我的理解：模式就是在某一场景下，针对某一问题，有着对应解决方案。&lt;/p&gt;
+
+&lt;p&gt;当有了这样一种模式。下次再碰到同样的场景，同样的问题，这种模式就可以解决掉这样的问题。&lt;/p&gt;
+
+&lt;p&gt;这里所说的某一场景、某一问题，并不具体化，而是抽象的。当解决完一个问题之后，从这个问题抽取出一种模式，并且将模式所能解决的场景/问题范化，到之后为更多的问题服务，才是模式的意义。&lt;/p&gt;
+
+&lt;h3 id='id15'&gt;模式并非单独存在&lt;/h3&gt;
+
+&lt;p&gt;使用某种模式，通常带来新的问题，而其中一些问题，可以使用别的模式去解决。 模式可以是包含和被包含的关系。&lt;/p&gt;
+
+&lt;p&gt;书中举的例子非常好：使用MVC模式会带来一个问题，即 model 更新之后，需要同时被 view 和 controller 知道，这时候，可以使用 观察者模式 来解决由 MVC 所带来的问题。&lt;/p&gt;
+
+&lt;p&gt;当然，使用观察者也一定会带来新的问题。 究竟要把问题解决到什么程度？ 那就要看我当初的目标了。 也就是：判断模式使用的成功程度，是取决于当初设计的目标是否实现。&lt;/p&gt;
+
+&lt;h3 id='id16'&gt;模式从作用范围由大到小分为三种&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;体系结构模式&lt;/li&gt;
+&lt;li&gt;设计模式&lt;/li&gt;
+&lt;li&gt;惯用法(idom)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;模式的学习不能仅仅依靠理论，还要实践，而且是需要工程级别的实践才能体会起优缺点。 接下来的学习笔记中，将逐渐慢慢的学习之。&lt;/p&gt;</content>
+ </entry>
  
  <entry>
    <title>Ruby正则表达式学习笔记</title>
