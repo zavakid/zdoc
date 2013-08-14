@@ -4,13 +4,77 @@
  <title>说者无意</title>
  <link href="http://www.zavakid.com/atom.xml" rel="self"/>
  <link href="http://www.zavakid.com"/>
- <updated>2013-08-06T10:18:28+08:00</updated>
+ <updated>2013-08-14T15:13:08+08:00</updated>
  <id>http://www.zavakid.com</id>
  <author>
    <name>Zava</name>
    <email></email>
  </author>
 
+ 
+ <entry>
+   <title>使用 git flow 进行产品分支的管理2</title>
+   <link href="http://www.zavakid.com/2013/08/14/git_flow_2"/>
+   <updated>2013-08-14T00:00:00+08:00</updated>
+   <id>http://www.zavakid.com/2013/08/14/git_flow_2</id>
+   <content type="html">&lt;p&gt;&lt;a href='http://www.zavakid.com/2013/08/04/git_flow/'&gt;上次说到 git-flow 的主要流程&lt;/a&gt;，现在应该是给出例子的时候了。&lt;/p&gt;
+
+&lt;p&gt;我最近在中间件团队开发的一个技术产品（就叫他Tesla好了），就是使用了这一个模型。在我还没有接触到 git-flow 的时候，Tesla就已经开发好一阵子了。还好，这并不影响先有产品对 git-flow 的使用。&lt;/p&gt;
+
+&lt;p&gt;由于我用的是 ubuntu，所以在安装方面，会简单很多（别担心，如果你是其他操作系统，也会有相应的&lt;a href='https://github.com/nvie/gitflow/wiki/Installation'&gt;安装步骤&lt;/a&gt;）&lt;/p&gt;
+
+&lt;p&gt;我先开始安装 git flow &lt;div&gt;
+  &lt;pre&gt;&lt;code class='bash'&gt;sudo apt-get install git-flow&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;&lt;/p&gt;
+
+&lt;p&gt;然后再安装 git flow 等一些自动补齐工具 &lt;div&gt;
+  &lt;pre&gt;&lt;code class='bash'&gt;sudo apt-get install bash-completion&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;&lt;/p&gt;
+
+&lt;p&gt;接着再我的 tesla 工作目录进行 git flow 初始化 &lt;div&gt;
+  &lt;pre&gt;&lt;code class='bash'&gt;git flow init&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;&lt;/p&gt;
+
+&lt;p&gt;git flow 会询问你一些分支名称的设置，我一路回车，使用默认值。 现在，我已经在 develop 的分支下面了。&lt;/p&gt;
+
+&lt;p&gt;当我开始开发一个新的 feature 时候，需要进行以下操作： &lt;div&gt;
+  &lt;pre&gt;&lt;code class='bash'&gt;git flow feature start issue_1&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;&lt;/p&gt;
+
+&lt;p&gt;这时候，git flow 已经帮我建立好了 feature/issue_1 这个分支，并且已经 co 出了此分支&lt;/p&gt;
+
+&lt;p&gt;当我在 feature/issue_1 分支上开发好了issue_1 这个功能时，我会进行如下操作： &lt;div&gt;
+  &lt;pre&gt;&lt;code class='bash'&gt;git flow feature finish issue_1&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;&lt;/p&gt;
+
+&lt;p&gt;这样， feature/issue_1 就会被merge到develop分支上，并且feature/issue_1分支已经被删除，我又再develop分支上了。&lt;/p&gt;
+
+&lt;p&gt;当我需要发布一个正常版本的时候，我会进行如下操作： &lt;div&gt;
+  &lt;pre&gt;&lt;code class='bash'&gt;git flow release start v0.1&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;&lt;/p&gt;
+
+&lt;p&gt;这样，git flow 就会帮我从 develop分支上拉出一个 release/v0.1 的分支。 我需要在这个分支上做一些修改，比如版本号的改动,然后拿去做测试，确认可以发布后，使用: &lt;div&gt;
+  &lt;pre&gt;&lt;code class='bash'&gt;git flow release finish v0.1&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;&lt;/p&gt;
+
+&lt;p&gt;这样， git flow 就自动帮我把 release/v0.1 merge 到 master 分支上，接着，也会将 release/v0.1 merge 回 develop 上。 与此同时，git flow 还会帮我把 release/v0.1 打好 v0.1 的 tag。&lt;/p&gt;
+
+&lt;p&gt;发布的时候，只需要将 tag 为 v0.1 的版本 checkout 出来，然后去做部署即可。&lt;/p&gt;
+
+&lt;p&gt;当 v0.1 这个版本被反馈出有好几处bug的时候，我们需要这么操作： &lt;div&gt;
+  &lt;pre&gt;&lt;code class='bash'&gt;git flow hotfix start v0.11&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;&lt;/p&gt;
+
+&lt;p&gt;这样，git flow 就会帮我从 master 分支上拉出一个 hotfix/v0.11 的分支。&lt;/p&gt;
+
+&lt;p&gt;我在这个分支上修改这几个bug，并且测试完毕。接着执行： &lt;div&gt;
+  &lt;pre&gt;&lt;code class='bash'&gt;git flow hotfix finish v0.11&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;&lt;/p&gt;
+
+&lt;p&gt;贴心的 git flow 就会帮我把 hotfix/v0.11 这个分支 merge 到 master 上，然后 merge 回 develop 上。 接着，还会打好 v0.11 这个 tag，这就是 tesla 的小版本发布了。&lt;/p&gt;
+
+&lt;p&gt;完成之后，我又开始了正常 feature 的开发……&lt;/p&gt;</content>
+ </entry>
  
  <entry>
    <title>使用 git flow 进行产品分支的管理</title>
@@ -53,7 +117,7 @@
 
 &lt;p&gt;现在很多团队开始转向 git，一个不错的分支模型就显得比较重要了。git flow 正好解决了这个问题。而且更重要的是，对于想跨团队共建代码的公司来说，分支模型的一致性，无疑会避免很多问题，这一点很关键。&lt;/p&gt;
 
-&lt;p&gt;示例在再后一篇给出 :)&lt;/p&gt;</content>
+&lt;p&gt;&lt;a href='http://www.zavakid.com/2013/08/14/git_flow_2/'&gt;示例在这里&lt;/a&gt;。&lt;/p&gt;</content>
  </entry>
  
  <entry>
