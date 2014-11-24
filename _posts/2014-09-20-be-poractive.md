@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 更加积极的生活
-draft: true
+published: false
 categories:
   感悟
 tags:

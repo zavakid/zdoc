@@ -1,3 +1,3 @@
 source "https://ruby.taobao.org"
 
-gem "jekyll", "1.5.1" 
+gem "jekyll", "0.12.1" 
