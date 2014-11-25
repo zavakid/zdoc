@@ -21,3 +21,7 @@ tags:
 * cmd+Y: 快速预览, 到某个方法试试就知道
 * ctrl+T: 快速重构
 * cmd+N: 生成代码
+
+for scala user:
+* cmd+shift+P : 找到 implicit arg
+* ctrl+Q: 找到 implicit conversion
