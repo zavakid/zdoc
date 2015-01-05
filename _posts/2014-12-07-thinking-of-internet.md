@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 读<<周鸿祎自述:我的互联网方法论>>笔记
+title: 读 周鸿祎自述:我的互联网方法论 笔记
 published: true
 categories:
   互联网

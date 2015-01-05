@@ -1,13 +1,14 @@
 ---
 layout: post
 title: Idea 在 Mac OS X 下有用的快捷键
-published: false
+published: true
 categories:
   效率
 tags:
   Idea
   Mac
 ---
+
 注: Keymap 在 Mac OS X 10.5+ 的时候使用
 
 更新于 2015-01-05
@@ -26,5 +27,6 @@ tags:
 * cmd+shift+T : 创建测试类
 
 for scala user:
+
 * cmd+shift+P : 找到 implicit arg
 * ctrl+Q: 找到 implicit conversion
