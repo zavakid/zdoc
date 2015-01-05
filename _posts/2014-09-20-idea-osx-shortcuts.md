@@ -10,6 +10,8 @@ tags:
 ---
 注: Keymap 在 Mac OS X 10.5+ 的时候使用
 
+更新于 2015-01-05
+
 * cmd+O : 查找类
 * cmd+shift+O : 查找类或资源
 * cmd+B : 找声明
@@ -21,6 +23,7 @@ tags:
 * cmd+Y: 快速预览, 到某个方法试试就知道
 * ctrl+T: 快速重构
 * cmd+N: 生成代码
+* cmd+shift+T : 创建测试类
 
 for scala user:
 * cmd+shift+P : 找到 implicit arg
