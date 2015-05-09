@@ -25,6 +25,7 @@ tags:
 * ctrl+T: 快速重构
 * cmd+N: 生成代码
 * cmd+shift+T : 创建测试类
+* cmd+option+V : 生成本地变量
 
 for scala user:
 
