@@ -60,6 +60,6 @@ tags:
 <h3>结论</h3>
 <ol>
 	<li>判断IO是同步还是异步，是看谁主动将<strong>数据</strong>拷贝到用户进程。</li>
-	<li>select或者poll，epoll，是同步调用，进行此调用的用户进程也处于阻塞状态。</li>
+	<li>select或者poll，epoll，是同步调用</li>
 	<li>javaScript或者nodejs中的读取网络（文件）数据，然后提供回调函数进行处理，是异步IO。</li>
 </ol>
